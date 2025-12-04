@@ -44,6 +44,16 @@ This is a Brazilian legal prediction system (SPL - Sistema de Previsão Legal) f
 
 ## Recent Changes (Dec 4, 2024)
 
+### UI/UX Improvements
+1. **SPLDashboard Redesign**: Complete redesign with modern cards, enhanced statistics display, improved visual hierarchy, and interactive cards with status indicators
+2. **Sidebar Enhancement**: Redesigned with expandable menus, better icons, collapsed state support, and smoother navigation transitions
+3. **LegalAssistant Upgrade**: Modern UI with better loading states, example prompts, and improved user experience
+4. **Global Animations**: Added comprehensive CSS animations (fade-in, slide-in, fade-in-up, fade-in-down) and custom scrollbar styling
+
+### Technical Fixes
+1. **Tailwind CSS Class Mapping**: Fixed critical Tailwind CSS class interpolation issues by replacing template literals with proper class mapping objects (getStatusClasses, getPriorityClasses) - Tailwind CDN doesn't support dynamic class generation
+2. **Status/Priority Configs**: Added explicit class definitions for statuses (concluido, em_andamento, atrasado) and priorities (critica, alta, media, baixa)
+
 ### Replit Environment Setup
 1. **Port Configuration**: Changed from 3000 to 5000 for Replit webview compatibility
 2. **HMR Configuration**: Added conditional HMR config for both Replit and local development
@@ -58,6 +68,7 @@ This is a Brazilian legal prediction system (SPL - Sistema de Previsão Legal) f
 - HMR is configured to work with Replit's proxy environment
 - The Gemini API key is injected at build time and exposed in the client bundle
 - The backend folder contains configuration files but no actual server implementation
+- **Important**: Tailwind CDN requires explicit class names - template literals like `bg-${color}-500` don't work and must use class mapping objects
 
 ## Environment Variables
 
