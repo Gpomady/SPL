@@ -2,11 +2,13 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import request from 'supertest';
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import authRoutes from '../src/routes/auth';
 import { errorHandler } from '../src/middleware/errorHandler';
 
 const app = express();
 app.use(cors());
+app.use(cookieParser());
 app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use(errorHandler);
@@ -74,14 +76,14 @@ describe('Auth API', () => {
   });
 
   describe('POST /api/auth/refresh', () => {
-    it('should require refresh token', async () => {
+    it('should require refresh token cookie', async () => {
       const res = await request(app)
         .post('/api/auth/refresh')
         .send({});
 
-      expect(res.status).toBe(400);
+      expect(res.status).toBe(401);
       expect(res.body.success).toBe(false);
-      expect(res.body.message).toBe('Token de atualização não fornecido');
+      expect(res.body.message).toBe('Token de atualização não encontrado');
     });
   });
 });

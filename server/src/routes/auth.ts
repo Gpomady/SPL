@@ -87,7 +87,7 @@ router.post('/logout', authenticate, async (req: AuthRequest, res: Response<ApiR
     const refreshToken = req.cookies?.refreshToken;
     await authService.logout(req.user!.userId, refreshToken);
     
-    res.clearCookie('refreshToken', { path: '/' });
+    res.clearCookie('refreshToken', COOKIE_OPTIONS);
     
     res.json({
       success: true,
