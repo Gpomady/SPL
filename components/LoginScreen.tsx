@@ -46,7 +46,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
       }
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(err.message);
+        if (err.errors) {
+          const errorMessages = Object.values(err.errors).flat();
+          setError(errorMessages.join('. '));
+        } else {
+          setError(err.message);
+        }
       } else {
         setError('Erro ao conectar com o servidor');
       }
