@@ -17,6 +17,13 @@ export default defineConfig(({ mode }) => {
         port: 5000,
         host: '0.0.0.0',
         hmr: hmrConfig,
+        allowedHosts: true,
+        proxy: {
+          '/api': {
+            target: 'http://localhost:3001',
+            changeOrigin: true,
+          },
+        },
       },
       plugins: [react()],
       define: {
@@ -32,7 +39,12 @@ export default defineConfig(({ mode }) => {
           '@context': path.resolve(__dirname, './src/context'),
           '@ui': path.resolve(__dirname, './src/components/ui'),
           '@shared': path.resolve(__dirname, './src/components/shared'),
+          '@lib': path.resolve(__dirname, './src/lib'),
+          '@assets': path.resolve(__dirname, './attached_assets'),
         }
-      }
+      },
+      css: {
+        postcss: './postcss.config.js',
+      },
     };
 });

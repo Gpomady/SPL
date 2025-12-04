@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://spl:spl_password@db:5432/spl_db
+      - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET:-spl-access-secret-key-2024}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-spl-refresh-secret-key-2024}
+      - CORS_ORIGIN=${CORS_ORIGIN:-*}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - spl-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "5000:5000"
+    environment:
+      - VITE_API_URL=http://app:3001
+    depends_on:
+      - app
+    restart: unless-stopped
+    networks:
+      - spl-network
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=spl
+      - POSTGRES_PASSWORD=spl_password
+      - POSTGRES_DB=spl_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U spl -d spl_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - spl-network
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - spl-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  spl-network:
+    driver: bridge
