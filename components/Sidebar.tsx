@@ -187,7 +187,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onO
 
         <div className="mx-2 my-2">
           <div 
-            onClick={() => onChangeView('spl-actions')}
+            onClick={() => onChangeView('spl-obligations')}
             className={`
               relative overflow-hidden flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all duration-300
               ${currentView.startsWith('spl-') 

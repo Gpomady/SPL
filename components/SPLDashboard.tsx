@@ -35,11 +35,13 @@ import {
   Timer,
   Briefcase,
   Trash2,
-  Save
+  Save,
+  Layers
 } from 'lucide-react';
 import { Button } from './Button';
 import { Modal, ConfirmDialog } from './Modal';
 import { StatusDistributionChart, ProgressLineChart, BarComparisonChart } from './Charts';
+import { ObligationsPanel } from './ObligationsPanel';
 
 interface SPLDashboardProps {
   viewMode?: string;
@@ -139,7 +141,7 @@ const SPL_AREA_DATA = [
 ];
 
 export const SPLDashboard: React.FC<SPLDashboardProps> = ({ 
-  viewMode = 'spl-actions', 
+  viewMode = 'spl-obligations', 
   onChangeView = (_: string) => {},
   initialParams
 }) => {
@@ -202,10 +204,11 @@ export const SPLDashboard: React.FC<SPLDashboardProps> = ({
 
   const renderContent = () => {
     switch(activeTab) {
+      case 'obligations': return <ObligationsPanel filterType="ALL" onNavigate={onChangeView} />;
       case 'actions': return <ActionPlansView initialParams={initialParams} onShowToast={showToast} />;
       case 'updates': return <LegalUpdatesView onShowToast={showToast} />;
       case 'library': return <LibraryView onShowToast={showToast} />;
-      default: return <ActionPlansView initialParams={initialParams} onShowToast={showToast} />;
+      default: return <ObligationsPanel filterType="ALL" onNavigate={onChangeView} />;
     }
   };
 
@@ -302,6 +305,7 @@ export const SPLDashboard: React.FC<SPLDashboardProps> = ({
         <div className="border-b border-slate-100">
           <nav className="flex" aria-label="Tabs">
             {[
+              { id: 'obligations', label: 'Obrigações Aplicáveis', icon: Layers, count: 9 },
               { id: 'actions', label: 'Planos de Ação', icon: ListTodo, count: stats.total },
               { id: 'updates', label: 'Monitoramento Legal', icon: Newspaper, count: MOCK_LEGAL_UPDATES.filter(u => u.isNew).length },
               { id: 'library', label: 'Biblioteca de Normas', icon: Book },
