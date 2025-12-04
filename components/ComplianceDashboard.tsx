@@ -1,9 +1,8 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from './Button';
 import { StatCard } from './StatCard';
 import { Modal, ConfirmDialog } from './Modal';
-import { InsightsChartCard, ChartFilterModal } from './InsightsChartCard';
 import { 
   MonthlyTrendChart, 
   StatusDistributionChart, 
@@ -11,10 +10,6 @@ import {
   RiskHeatmap,
   ProgressLineChart 
 } from './Charts';
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  PieChart, Pie, Cell
-} from 'recharts';
 import { 
   CheckCircle2, 
   XCircle, 
@@ -548,33 +543,8 @@ const PROGRESS_DATA = [
   { name: 'Jun', progresso: 85, meta: 85 }
 ];
 
-const OL_BY_SCOPE_DATA = [
-    { name: 'Meio Ambiente', atendido: 475, pendente: 284, naoAplicavel: 413, color: '#10b981' },
-    { name: 'Saúde e Segurança', atendido: 320, pendente: 110, naoAplicavel: 305, color: '#3b82f6' },
-    { name: 'Responsabilidade Social', atendido: 180, pendente: 20, naoAplicavel: 50, color: '#8b5cf6' },
-];
-
-const OL_BY_AREA_DATA = [
-    { name: 'QSMS', value: 185, color: '#0f766e' },
-    { name: 'SGI', value: 720, color: '#0ea5e9' },
-    { name: 'Suprimentos', value: 57, color: '#f59e0b' },
-    { name: 'Administrativo', value: 27, color: '#8b5cf6' },
-];
-
-const OL_BY_RESPONSIBLE_DATA = [
-    { name: 'Cláudia Brandizzi', atendido: 419, reavaliar: 181, naoAplicavel: 273 },
-    { name: 'Walisson', atendido: 39, reavaliar: 15, naoAplicavel: 3 },
-    { name: 'Fábio Gabriel', atendido: 18, reavaliar: 11, naoAplicavel: 5 },
-    { name: 'Jamilson Carmo', atendido: 2, reavaliar: 0, naoAplicavel: 2 },
-];
-
 const OLSpecificCharts = () => {
     const percentage = 83;
-    const [showFilterModal, setShowFilterModal] = useState(false);
-
-    const handleExport = (chartName: string) => {
-        console.log(`Exporting ${chartName}...`);
-    };
 
     return (
         <div className="space-y-6 animate-fade-in">
@@ -643,79 +613,6 @@ const OLSpecificCharts = () => {
                 <StatusDistributionChart data={STATUS_DISTRIBUTION_DATA} title="Distribuição por Status" />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <InsightsChartCard 
-                    title="OL por Escopo" 
-                    subtitle="Distribuição de obrigações legais"
-                    onExport={() => handleExport('OL por Escopo')}
-                    onFilter={() => setShowFilterModal(true)}
-                    height="h-72"
-                >
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={OL_BY_SCOPE_DATA} layout="vertical" margin={{ left: 20, right: 20 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={true} vertical={false} />
-                            <XAxis type="number" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                            <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} width={100} />
-                            <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px' }} />
-                            <Legend wrapperStyle={{ fontSize: '11px' }} />
-                            <Bar dataKey="atendido" stackId="a" fill="#10b981" name="Atendido" radius={[0, 0, 0, 0]} />
-                            <Bar dataKey="pendente" stackId="a" fill="#f59e0b" name="Pendente" />
-                            <Bar dataKey="naoAplicavel" stackId="a" fill="#94a3b8" name="N/A" radius={[0, 4, 4, 0]} />
-                        </BarChart>
-                    </ResponsiveContainer>
-                </InsightsChartCard>
-
-                <InsightsChartCard 
-                    title="OL por Área" 
-                    subtitle="Obrigações por departamento"
-                    onExport={() => handleExport('OL por Área')}
-                    onFilter={() => setShowFilterModal(true)}
-                    height="h-72"
-                >
-                    <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                            <Pie
-                                data={OL_BY_AREA_DATA}
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={50}
-                                outerRadius={80}
-                                paddingAngle={3}
-                                dataKey="value"
-                                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                                labelLine={{ stroke: '#cbd5e1', strokeWidth: 1 }}
-                            >
-                                {OL_BY_AREA_DATA.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={entry.color} />
-                                ))}
-                            </Pie>
-                            <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px' }} />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </InsightsChartCard>
-
-                <InsightsChartCard 
-                    title="OL por Responsável" 
-                    subtitle="Performance individual"
-                    onExport={() => handleExport('OL por Responsável')}
-                    onFilter={() => setShowFilterModal(true)}
-                    height="h-72"
-                >
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={OL_BY_RESPONSIBLE_DATA} layout="vertical" margin={{ left: 0, right: 20 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={true} vertical={false} />
-                            <XAxis type="number" tick={{ fontSize: 10, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                            <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: '#64748b' }} axisLine={false} tickLine={false} width={90} />
-                            <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px' }} />
-                            <Legend wrapperStyle={{ fontSize: '10px' }} />
-                            <Bar dataKey="atendido" stackId="a" fill="#10b981" name="Atendido" />
-                            <Bar dataKey="reavaliar" stackId="a" fill="#8b5cf6" name="Reavaliar" />
-                            <Bar dataKey="naoAplicavel" stackId="a" fill="#94a3b8" name="N/A" radius={[0, 4, 4, 0]} />
-                        </BarChart>
-                    </ResponsiveContainer>
-                </InsightsChartCard>
-            </div>
-
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <MonthlyTrendChart data={MONTHLY_TREND_DATA} title="Evolução da Conformidade" />
                 <BarComparisonChart data={AREA_COMPARISON_DATA} title="Comparativo por Área" />
@@ -725,34 +622,6 @@ const OLSpecificCharts = () => {
                 <RiskHeatmap data={RISK_DATA} title="Matriz de Riscos por Área" />
                 <ProgressLineChart data={PROGRESS_DATA} title="Progresso vs Meta" />
             </div>
-
-            <ChartFilterModal
-                isOpen={showFilterModal}
-                onClose={() => setShowFilterModal(false)}
-                title="Filtrar Dados"
-                onApply={() => setShowFilterModal(false)}
-            >
-                <div className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Período</label>
-                        <select className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20">
-                            <option>Últimos 30 dias</option>
-                            <option>Últimos 90 dias</option>
-                            <option>Último ano</option>
-                            <option>Todo período</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
-                        <select className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20">
-                            <option>Todos</option>
-                            <option>Atendido</option>
-                            <option>Pendente</option>
-                            <option>Não Aplicável</option>
-                        </select>
-                    </div>
-                </div>
-            </ChartFilterModal>
         </div>
     )
 }
