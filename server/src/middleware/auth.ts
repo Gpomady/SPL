@@ -1,7 +1,7 @@
 import { Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { config } from '../config';
-import { AuthRequest, JwtPayload, ApiResponse, GlobalRole, CompanyRole } from '../types';
+import { AuthRequest, JwtPayload, ApiResponse } from '../types';
 
 export const authenticate = (
   req: AuthRequest,
@@ -46,7 +46,7 @@ export const authenticate = (
   }
 };
 
-export const requireGlobalRole = (...roles: GlobalRole[]) => {
+export const requireRole = (...roles: string[]) => {
   return (req: AuthRequest, res: Response<ApiResponse>, next: NextFunction) => {
     if (!req.user) {
       return res.status(401).json({
@@ -55,65 +55,15 @@ export const requireGlobalRole = (...roles: GlobalRole[]) => {
       });
     }
     
-    if (!roles.includes(req.user.globalRole)) {
+    if (!roles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,
-        message: 'Acesso não autorizado para este perfil',
+        message: 'Acesso não autorizado',
       });
     }
     
     next();
   };
-};
-
-export const requireCompanyRole = (...roles: CompanyRole[]) => {
-  return (req: AuthRequest, res: Response<ApiResponse>, next: NextFunction) => {
-    if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Usuário não autenticado',
-      });
-    }
-    
-    if (req.user.globalRole === 'MASTER') {
-      return next();
-    }
-    
-    if (!req.user.companyRole || !roles.includes(req.user.companyRole)) {
-      return res.status(403).json({
-        success: false,
-        message: 'Acesso não autorizado para este nível de permissão',
-      });
-    }
-    
-    next();
-  };
-};
-
-export const requireCompanyAccess = (
-  req: AuthRequest,
-  res: Response<ApiResponse>,
-  next: NextFunction
-) => {
-  if (!req.user) {
-    return res.status(401).json({
-      success: false,
-      message: 'Usuário não autenticado',
-    });
-  }
-  
-  if (req.user.globalRole === 'MASTER') {
-    return next();
-  }
-  
-  if (!req.user.activeCompanyId) {
-    return res.status(403).json({
-      success: false,
-      message: 'Nenhuma empresa selecionada',
-    });
-  }
-  
-  next();
 };
 
 export const optionalAuth = (

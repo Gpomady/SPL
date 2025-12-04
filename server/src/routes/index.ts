@@ -1,13 +1,11 @@
 import { Router } from 'express';
 import authRoutes from './auth';
-import adminRoutes from './admin';
 import companiesRoutes from './companies';
 import obligationsRoutes from './obligations';
 
 const router = Router();
 
 router.use('/auth', authRoutes);
-router.use('/admin', adminRoutes);
 router.use('/companies', companiesRoutes);
 router.use('/obligations', obligationsRoutes);
 

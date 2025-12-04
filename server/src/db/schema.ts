@@ -1,20 +1,14 @@
-import { pgTable, text, varchar, timestamp, boolean, integer, jsonb, uuid, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, varchar, timestamp, boolean, integer, jsonb, uuid } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
-
-export const globalRoleEnum = pgEnum('global_role', ['MASTER', 'PLATFORM_SUPPORT', 'USER']);
-export const companyRoleEnum = pgEnum('company_role', ['ADMIN', 'MANAGER', 'COLLABORATOR', 'VIEWER']);
-export const membershipStatusEnum = pgEnum('membership_status', ['pending', 'active', 'suspended']);
-export const companyStatusEnum = pgEnum('company_status', ['pending_setup', 'active', 'suspended', 'cancelled']);
 
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
   email: varchar('email', { length: 255 }).notNull().unique(),
-  password: varchar('password', { length: 255 }),
+  password: varchar('password', { length: 255 }).notNull(),
   name: varchar('name', { length: 255 }).notNull(),
-  globalRole: globalRoleEnum('global_role').notNull().default('USER'),
+  role: varchar('role', { length: 50 }).notNull().default('user'),
   avatar: text('avatar'),
   isActive: boolean('is_active').notNull().default(true),
-  mustChangePassword: boolean('must_change_password').notNull().default(false),
   lastLogin: timestamp('last_login'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
@@ -30,6 +24,7 @@ export const refreshTokens = pgTable('refresh_tokens', {
 
 export const companies = pgTable('companies', {
   id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   cnpj: varchar('cnpj', { length: 18 }).notNull().unique(),
   razaoSocial: varchar('razao_social', { length: 255 }).notNull(),
   nomeFantasia: varchar('nome_fantasia', { length: 255 }),
@@ -41,40 +36,9 @@ export const companies = pgTable('companies', {
   cnaePrincipal: varchar('cnae_principal', { length: 10 }).notNull(),
   cnaesSecundarios: jsonb('cnaes_secundarios').$type<string[]>().default([]),
   riskLevel: varchar('risk_level', { length: 20 }).default('medium'),
-  status: companyStatusEnum('status').notNull().default('pending_setup'),
-  contractStartDate: timestamp('contract_start_date'),
-  contractEndDate: timestamp('contract_end_date'),
-  slaTier: varchar('sla_tier', { length: 50 }).default('standard'),
-  billingEmail: varchar('billing_email', { length: 255 }),
-  notes: text('notes'),
-  createdBy: uuid('created_by').references(() => users.id),
+  status: varchar('status', { length: 50 }).default('active'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
-});
-
-export const companyMemberships = pgTable('company_memberships', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  companyId: uuid('company_id').notNull().references(() => companies.id, { onDelete: 'cascade' }),
-  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  companyRole: companyRoleEnum('company_role').notNull().default('COLLABORATOR'),
-  status: membershipStatusEnum('status').notNull().default('pending'),
-  invitedBy: uuid('invited_by').references(() => users.id),
-  invitedAt: timestamp('invited_at').notNull().defaultNow(),
-  acceptedAt: timestamp('accepted_at'),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-});
-
-export const invitations = pgTable('invitations', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  email: varchar('email', { length: 255 }).notNull(),
-  companyId: uuid('company_id').notNull().references(() => companies.id, { onDelete: 'cascade' }),
-  companyRole: companyRoleEnum('company_role').notNull().default('COLLABORATOR'),
-  token: varchar('token', { length: 255 }).notNull().unique(),
-  invitedBy: uuid('invited_by').notNull().references(() => users.id),
-  expiresAt: timestamp('expires_at').notNull(),
-  acceptedAt: timestamp('accepted_at'),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
 export const legalObligations = pgTable('legal_obligations', {
@@ -89,7 +53,6 @@ export const legalObligations = pgTable('legal_obligations', {
   frequency: varchar('frequency', { length: 50 }),
   deadline: timestamp('deadline'),
   status: varchar('status', { length: 50 }).notNull().default('pending'),
-  applicability: varchar('applicability', { length: 20 }).default('to_evaluate'),
   riskLevel: varchar('risk_level', { length: 20 }).default('medium'),
   responsible: varchar('responsible', { length: 255 }),
   priority: varchar('priority', { length: 20 }).default('medium'),
@@ -146,36 +109,9 @@ export const actionPlans = pgTable('action_plans', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
-export const questionnaires = pgTable('questionnaires', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  companyId: uuid('company_id').references(() => companies.id, { onDelete: 'cascade' }),
-  title: varchar('title', { length: 255 }).notNull(),
-  description: text('description'),
-  category: varchar('category', { length: 100 }),
-  questions: jsonb('questions').$type<any[]>().default([]),
-  status: varchar('status', { length: 50 }).default('draft'),
-  isTemplate: boolean('is_template').notNull().default(false),
-  createdBy: uuid('created_by').references(() => users.id),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-});
-
-export const questionnaireResponses = pgTable('questionnaire_responses', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  questionnaireId: uuid('questionnaire_id').notNull().references(() => questionnaires.id, { onDelete: 'cascade' }),
-  companyId: uuid('company_id').notNull().references(() => companies.id, { onDelete: 'cascade' }),
-  respondentId: uuid('respondent_id').references(() => users.id),
-  answers: jsonb('answers').$type<Record<string, any>>().default({}),
-  status: varchar('status', { length: 50 }).default('pending'),
-  submittedAt: timestamp('submitted_at'),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-});
-
 export const notifications = pgTable('notifications', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  companyId: uuid('company_id').references(() => companies.id, { onDelete: 'cascade' }),
   title: varchar('title', { length: 255 }).notNull(),
   message: text('message').notNull(),
   type: varchar('type', { length: 50 }).default('info'),
@@ -187,7 +123,6 @@ export const notifications = pgTable('notifications', {
 export const auditLogs = pgTable('audit_logs', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: uuid('user_id').references(() => users.id),
-  companyId: uuid('company_id').references(() => companies.id),
   action: varchar('action', { length: 100 }).notNull(),
   entity: varchar('entity', { length: 100 }).notNull(),
   entityId: uuid('entity_id'),
@@ -198,47 +133,20 @@ export const auditLogs = pgTable('audit_logs', {
 });
 
 export const usersRelations = relations(users, ({ many }) => ({
-  memberships: many(companyMemberships),
+  companies: many(companies),
   refreshTokens: many(refreshTokens),
   notifications: many(notifications),
-  sentInvitations: many(invitations),
 }));
 
 export const companiesRelations = relations(companies, ({ one, many }) => ({
-  memberships: many(companyMemberships),
+  user: one(users, { fields: [companies.userId], references: [users.id] }),
   obligations: many(legalObligations),
   documents: many(documents),
   actionPlans: many(actionPlans),
-  questionnaires: many(questionnaires),
-  notifications: many(notifications),
-  creator: one(users, { fields: [companies.createdBy], references: [users.id] }),
-}));
-
-export const companyMembershipsRelations = relations(companyMemberships, ({ one }) => ({
-  company: one(companies, { fields: [companyMemberships.companyId], references: [companies.id] }),
-  user: one(users, { fields: [companyMemberships.userId], references: [users.id] }),
-  inviter: one(users, { fields: [companyMemberships.invitedBy], references: [users.id] }),
-}));
-
-export const invitationsRelations = relations(invitations, ({ one }) => ({
-  company: one(companies, { fields: [invitations.companyId], references: [companies.id] }),
-  inviter: one(users, { fields: [invitations.invitedBy], references: [users.id] }),
 }));
 
 export const obligationsRelations = relations(legalObligations, ({ one, many }) => ({
   company: one(companies, { fields: [legalObligations.companyId], references: [companies.id] }),
   documents: many(documents),
   actionPlans: many(actionPlans),
-}));
-
-export const questionnairesRelations = relations(questionnaires, ({ one, many }) => ({
-  company: one(companies, { fields: [questionnaires.companyId], references: [companies.id] }),
-  creator: one(users, { fields: [questionnaires.createdBy], references: [users.id] }),
-  responses: many(questionnaireResponses),
-}));
-
-export const questionnaireResponsesRelations = relations(questionnaireResponses, ({ one }) => ({
-  questionnaire: one(questionnaires, { fields: [questionnaireResponses.questionnaireId], references: [questionnaires.id] }),
-  company: one(companies, { fields: [questionnaireResponses.companyId], references: [companies.id] }),
-  respondent: one(users, { fields: [questionnaireResponses.respondentId], references: [users.id] }),
 }));
