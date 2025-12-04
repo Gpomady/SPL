@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Folder, 
   FileText, 
@@ -128,10 +128,22 @@ export const DocumentsDashboard: React.FC<DocumentsDashboardProps> = ({
     name: '', validity: '', number: '', area: '', category: ''
   });
   const [filters, setFilters] = useState({ status: 'all', area: 'all', category: 'all' });
+  const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
     setToast({ message, type });
-    setTimeout(() => setToast(null), 4000);
+    toastTimeoutRef.current = setTimeout(() => setToast(null), 4000);
   };
 
   const handleExport = () => {

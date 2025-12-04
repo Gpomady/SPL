@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Bell, 
   Search, 
@@ -81,10 +81,22 @@ export const NotificationsDashboard: React.FC = () => {
     pushNotifications: false,
     digestFrequency: 'daily'
   });
+  const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
     setToast({ message, type });
-    setTimeout(() => setToast(null), 4000);
+    toastTimeoutRef.current = setTimeout(() => setToast(null), 4000);
   };
 
   const handleMarkAsRead = (id: number) => {

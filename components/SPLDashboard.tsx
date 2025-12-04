@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   ListTodo, 
   Newspaper, 
@@ -157,10 +157,22 @@ export const SPLDashboard: React.FC<SPLDashboardProps> = ({
     originType: 'OL',
     originId: ''
   });
+  const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
     setToast({ message, type });
-    setTimeout(() => setToast(null), 4000);
+    toastTimeoutRef.current = setTimeout(() => setToast(null), 4000);
   };
 
   const handleExport = () => {

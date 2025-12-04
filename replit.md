@@ -44,6 +44,35 @@ This is a Brazilian legal prediction system (SPL - Sistema de Previsão Legal) f
 
 ## Recent Changes (Dec 4, 2024)
 
+### Charts and Data Visualization
+1. **Recharts Integration**: Added Recharts library for interactive data visualizations
+2. **Charts Component**: Created reusable `Charts.tsx` with Bar, Line, Pie, Area, and Donut chart types
+3. **ComplianceDashboard Charts**: Real charts showing compliance status, monthly progress, and area distribution
+4. **Dashboard Charts**: Added visual indicators for compliance metrics
+
+### Interactive Components
+1. **Modal Component**: Created reusable `Modal.tsx` with sizes (sm/md/lg), confirm actions, and animations
+2. **Toast Notifications**: Added contextual feedback for user actions across all dashboards
+3. **Button Component**: Enhanced with loading states and variants
+
+### SPLDashboard Enhancements
+1. **New Plan Modal**: Functional "Novo Plano" button with complete form (title, area, responsible, deadline, priority, origin)
+2. **Export Functionality**: Working "Exportar Relatório" button with loading state
+3. **Toast Notifications**: Success/error feedback for all actions
+4. **View Components**: ActionPlansView, LegalUpdatesView, LibraryView with onShowToast prop support
+
+### DocumentsDashboard Enhancements
+1. **Upload Modal**: Complete upload form with drag-and-drop support, file metadata fields
+2. **New Folder Modal**: Create new folders with name and type selection
+3. **Filter Modal**: Filter by status, area, and category with reset option
+4. **Export Button**: Functional export with loading state
+
+### NotificationsDashboard Enhancements
+1. **Mark as Read**: Individual and bulk "mark all as read" functionality
+2. **Archive Notifications**: Remove notifications from the list
+3. **View Details Modal**: Full notification details in a modal
+4. **Settings Modal**: Configure email/push notifications and digest frequency
+
 ### UI/UX Improvements
 1. **SPLDashboard Redesign**: Complete redesign with modern cards, enhanced statistics display, improved visual hierarchy, and interactive cards with status indicators
 2. **Sidebar Enhancement**: Redesigned with expandable menus, better icons, collapsed state support, and smoother navigation transitions
@@ -53,6 +82,7 @@ This is a Brazilian legal prediction system (SPL - Sistema de Previsão Legal) f
 ### Technical Fixes
 1. **Tailwind CSS Class Mapping**: Fixed critical Tailwind CSS class interpolation issues by replacing template literals with proper class mapping objects (getStatusClasses, getPriorityClasses) - Tailwind CDN doesn't support dynamic class generation
 2. **Status/Priority Configs**: Added explicit class definitions for statuses (concluido, em_andamento, atrasado) and priorities (critica, alta, media, baixa)
+3. **TypeScript Props**: Proper typing for all component props including onShowToast handlers
 
 ### Replit Environment Setup
 1. **Port Configuration**: Changed from 3000 to 5000 for Replit webview compatibility
