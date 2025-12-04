@@ -33,9 +33,13 @@ import {
   AlertCircle,
   CheckCheck,
   Timer,
-  Briefcase
+  Briefcase,
+  Trash2,
+  Save
 } from 'lucide-react';
 import { Button } from './Button';
+import { Modal, ConfirmDialog } from './Modal';
+import { StatusDistributionChart, ProgressLineChart, BarComparisonChart } from './Charts';
 
 interface SPLDashboardProps {
   viewMode?: string;
@@ -112,6 +116,28 @@ const MOCK_LEGAL_UPDATES = [
   { id: 3, date: '15/11/2024', type: 'Federal', scope: 'Trabalhista', title: 'Revisão da NR-01 - Disposições Gerais', summary: 'Novas diretrizes para o gerenciamento de riscos ocupacionais (GRO) e Programa de Gerenciamento de Riscos (PGR).', impact: 'Alto', relatedTo: 'RL', isNew: false },
 ];
 
+const SPL_PROGRESS_DATA = [
+  { name: 'Jan', progresso: 45, meta: 60 },
+  { name: 'Fev', progresso: 52, meta: 60 },
+  { name: 'Mar', progresso: 58, meta: 65 },
+  { name: 'Abr', progresso: 65, meta: 70 },
+  { name: 'Mai', progresso: 72, meta: 75 },
+  { name: 'Jun', progresso: 80, meta: 80 }
+];
+
+const SPL_STATUS_DATA = [
+  { name: 'Concluídos', value: 2, color: '#10b981' },
+  { name: 'Em Andamento', value: 2, color: '#3b82f6' },
+  { name: 'Atrasados', value: 1, color: '#ef4444' }
+];
+
+const SPL_AREA_DATA = [
+  { name: 'QSMS', atual: 8, anterior: 5 },
+  { name: 'Meio Ambiente', atual: 12, anterior: 10 },
+  { name: 'Jurídico', atual: 4, anterior: 3 },
+  { name: 'Manutenção', atual: 6, anterior: 4 }
+];
+
 export const SPLDashboard: React.FC<SPLDashboardProps> = ({ 
   viewMode = 'spl-actions', 
   onChangeView = (_: string) => {},
@@ -119,6 +145,41 @@ export const SPLDashboard: React.FC<SPLDashboardProps> = ({
 }) => {
   
   const activeTab = viewMode.replace('spl-', '');
+  const [showNewPlanModal, setShowNewPlanModal] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [newPlan, setNewPlan] = useState({
+    title: '',
+    area: '',
+    responsible: '',
+    deadline: '',
+    priority: 'media',
+    originType: 'OL',
+    originId: ''
+  });
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000);
+  };
+
+  const handleExport = () => {
+    setIsExporting(true);
+    setTimeout(() => {
+      setIsExporting(false);
+      showToast('Relatório exportado com sucesso!');
+    }, 1500);
+  };
+
+  const handleSaveNewPlan = () => {
+    if (!newPlan.title || !newPlan.area || !newPlan.responsible) {
+      showToast('Preencha todos os campos obrigatórios', 'error');
+      return;
+    }
+    setShowNewPlanModal(false);
+    showToast('Plano de ação criado com sucesso!');
+    setNewPlan({ title: '', area: '', responsible: '', deadline: '', priority: 'media', originType: 'OL', originId: '' });
+  };
 
   const stats = {
     total: MOCK_ACTION_PLANS.length,
@@ -129,10 +190,10 @@ export const SPLDashboard: React.FC<SPLDashboardProps> = ({
 
   const renderContent = () => {
     switch(activeTab) {
-      case 'actions': return <ActionPlansView initialParams={initialParams} />;
-      case 'updates': return <LegalUpdatesView />;
-      case 'library': return <LibraryView />;
-      default: return <ActionPlansView initialParams={initialParams} />;
+      case 'actions': return <ActionPlansView initialParams={initialParams} onShowToast={showToast} />;
+      case 'updates': return <LegalUpdatesView onShowToast={showToast} />;
+      case 'library': return <LibraryView onShowToast={showToast} />;
+      default: return <ActionPlansView initialParams={initialParams} onShowToast={showToast} />;
     }
   };
 
@@ -159,10 +220,19 @@ export const SPLDashboard: React.FC<SPLDashboardProps> = ({
             </div>
             
             <div className="flex gap-3">
-              <Button size="sm" className="bg-white/10 hover:bg-white/20 text-white border-0 backdrop-blur-sm">
+              <Button 
+                size="sm" 
+                className="bg-white/10 hover:bg-white/20 text-white border-0 backdrop-blur-sm"
+                onClick={handleExport}
+                isLoading={isExporting}
+              >
                 <Download size={16} className="mr-2" /> Exportar Relatório
               </Button>
-              <Button size="sm" className="bg-teal-500 hover:bg-teal-400 text-white border-0 shadow-lg shadow-teal-500/25">
+              <Button 
+                size="sm" 
+                className="bg-teal-500 hover:bg-teal-400 text-white border-0 shadow-lg shadow-teal-500/25"
+                onClick={() => setShowNewPlanModal(true)}
+              >
                 <Plus size={16} className="mr-2" /> Novo Plano
               </Button>
             </div>
@@ -262,11 +332,126 @@ export const SPLDashboard: React.FC<SPLDashboardProps> = ({
           {renderContent()}
         </div>
       </div>
+
+      {toast && (
+        <div className={`fixed top-6 right-6 z-50 px-4 py-3 rounded-xl shadow-lg border flex items-center gap-3 animate-slide-in
+          ${toast.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800'}
+        `}>
+          {toast.type === 'success' ? <CheckCircle2 size={20}/> : <AlertTriangle size={20}/>}
+          <span className="text-sm font-medium">{toast.message}</span>
+          <button onClick={() => setToast(null)} className="ml-2 opacity-50 hover:opacity-100">
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
+      <Modal
+        isOpen={showNewPlanModal}
+        onClose={() => setShowNewPlanModal(false)}
+        title="Novo Plano de Ação"
+        size="lg"
+        onConfirm={handleSaveNewPlan}
+        confirmText="Criar Plano"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Título do Plano *</label>
+            <input
+              type="text"
+              value={newPlan.title}
+              onChange={(e) => setNewPlan({ ...newPlan, title: e.target.value })}
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+              placeholder="Descreva o plano de ação..."
+            />
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Área *</label>
+              <select
+                value={newPlan.area}
+                onChange={(e) => setNewPlan({ ...newPlan, area: e.target.value })}
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+              >
+                <option value="">Selecione...</option>
+                <option value="QSMS">QSMS</option>
+                <option value="Meio Ambiente">Meio Ambiente</option>
+                <option value="Jurídico">Jurídico</option>
+                <option value="Manutenção">Manutenção</option>
+                <option value="Administrativo">Administrativo</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Responsável *</label>
+              <select
+                value={newPlan.responsible}
+                onChange={(e) => setNewPlan({ ...newPlan, responsible: e.target.value })}
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+              >
+                <option value="">Selecione...</option>
+                <option value="Camila Canuto Mady">Camila Canuto Mady</option>
+                <option value="Cláudia Brandizzi">Cláudia Brandizzi</option>
+                <option value="Walisson">Walisson</option>
+                <option value="Helisson Brandão">Helisson Brandão</option>
+              </select>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Prazo</label>
+              <input
+                type="date"
+                value={newPlan.deadline}
+                onChange={(e) => setNewPlan({ ...newPlan, deadline: e.target.value })}
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Prioridade</label>
+              <select
+                value={newPlan.priority}
+                onChange={(e) => setNewPlan({ ...newPlan, priority: e.target.value })}
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+              >
+                <option value="baixa">Baixa</option>
+                <option value="media">Média</option>
+                <option value="alta">Alta</option>
+                <option value="critica">Crítica</option>
+              </select>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Tipo de Origem</label>
+              <select
+                value={newPlan.originType}
+                onChange={(e) => setNewPlan({ ...newPlan, originType: e.target.value })}
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+              >
+                <option value="OL">Obrigação Legal (OL)</option>
+                <option value="RL">Requisito Legal (RL)</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">ID da Origem</label>
+              <input
+                type="text"
+                value={newPlan.originId}
+                onChange={(e) => setNewPlan({ ...newPlan, originId: e.target.value })}
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                placeholder="Ex: OL-1, RL-128..."
+              />
+            </div>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
 
-const ActionPlansView = ({ initialParams }: { initialParams?: any }) => {
+const ActionPlansView = ({ initialParams, onShowToast }: { initialParams?: any; onShowToast?: (msg: string, type?: 'success' | 'error') => void }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterType, setFilterType] = useState<'ALL' | 'OL' | 'RL'>('ALL');
     const [filterStatus, setFilterStatus] = useState<string>('ALL');
@@ -590,7 +775,7 @@ const ActionPlansView = ({ initialParams }: { initialParams?: any }) => {
     );
 };
 
-const LegalUpdatesView = () => {
+const LegalUpdatesView = ({ onShowToast }: { onShowToast?: (msg: string, type?: 'success' | 'error') => void }) => {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-4">
@@ -719,7 +904,7 @@ const LegalUpdatesView = () => {
     );
 };
 
-const LibraryView = () => {
+const LibraryView = ({ onShowToast }: { onShowToast?: (msg: string, type?: 'success' | 'error') => void }) => {
     const categories = [
       { name: 'Meio Ambiente', count: 156, icon: '🌿' },
       { name: 'Segurança do Trabalho', count: 89, icon: '⚠️' },
