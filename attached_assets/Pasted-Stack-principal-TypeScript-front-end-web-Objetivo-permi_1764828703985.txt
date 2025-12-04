@@ -1,0 +1,257 @@
+Stack principal: TypeScript + front-end web.
+
+Objetivo: permitir que empresas cadastrem seu perfil (CNAE, localização, atividade, riscos, etc.) e o sistema retorne as obrigações legais aplicáveis, sempre vinculadas a fontes oficiais e com fluxo claro de uso.
+
+🎯 Seus objetivos principais
+
+Quero que você:
+
+Reorganize e proponha melhorias em toda a UX/UI:
+
+Botões,
+
+Navegação,
+
+Fluxos entre telas,
+
+Estados de carregamento, erro e sucesso,
+
+Textos dos rótulos e mensagens.
+
+Desenhe workflows claros e intuitivos, como:
+
+Onboarding da empresa (criação de perfil),
+
+Consulta / filtragem de obrigações legais,
+
+Visualização dos detalhes de cada obrigação,
+
+Registro de conformidade (cumprida / pendente / não se aplica),
+
+Upload de evidências (documentos, certificados, etc.).
+
+Defina exatamente o que acontece ao clicar em cada botão:
+
+Que página/aba se abre,
+
+Que componente é exibido,
+
+Que chamadas de API devem ser disparadas,
+
+Que feedback visual deve aparecer (toast, modal, highlight, etc.).
+
+Revisar bugs aparentes, inconsistências de navegação e problemas de usabilidade:
+
+Padrões quebrados,
+
+Botões que não deixam claro o que fazem,
+
+Elementos que confundem ou geram passos desnecessários,
+
+Nomes de rotas/componentes que não combinam com o comportamento.
+
+Sugerir como conectar com APIs oficiais:
+
+Ex.: APIs públicas de:
+
+CNPJ / dados cadastrais de empresas,
+
+CNAE,
+
+Legislações / diários oficiais / bases jurídicas públicas (quando aplicável).
+
+Explicar em quais pontos da UX essas integrações entram e como melhoram a experiência do usuário.
+
+🧩 Tarefas que quero que você faça em detalhes
+
+Analisar a arquitetura atual do front-end
+
+Identificar:
+
+Páginas principais,
+
+Componentes-chave,
+
+Onde estão hoje os formulários, botões e fluxos de navegação.
+
+Com base nisso, propor uma nova organização de:
+
+Rotas,
+
+Layouts,
+
+Nomes de componentes,
+
+Pastas de organização do projeto (se necessário).
+
+Desenhar o fluxo principal do usuário (User Journey)
+
+Criar um fluxo completo, por exemplo:
+
+Passo 1: Login / Acesso.
+
+Passo 2: Cadastro do perfil da empresa:
+
+Informar CNPJ,
+
+Buscar automaticamente dados via API oficial,
+
+Confirmar / editar CNAEs, endereços, etc.
+
+Passo 3: Questionário de detalhes operacionais:
+
+Estado/município de atuação,
+
+Riscos (inflamáveis, caldeiras, resíduos perigosos, etc.).
+
+Passo 4: Geração do Mapa de Obrigações Legais:
+
+Lista com filtros (risco, periodicidade, área temática).
+
+Passo 5: Tela de detalhe da obrigação:
+
+Resumo em linguagem clara,
+
+Link da legislação oficial,
+
+Campo para marcar status (Cumprida / Pendente / Não se aplica).
+
+Passo 6: Upload/gestão de evidências para cada obrigação.
+
+Passo 7: Dashboard com:
+
+Obrigações vencendo em breve,
+
+Obrigações de alto risco,
+
+Status por unidade/filial.
+
+Quero que você descreva esses fluxos tela por tela, com:
+
+Nome da tela,
+
+Objetivo da tela,
+
+Ações principais,
+
+Botões e o que cada um faz.
+
+Revisar e propor melhorias em todos os botões e interações
+
+Para cada tela/fluxo, quero que você:
+
+Liste os botões necessários (ex.: “Salvar perfil”, “Gerar mapa de obrigações”, “Ver detalhes”, “Adicionar evidência”, “Exportar Excel/PDF”, etc.).
+
+Para cada botão, defina:
+
+Texto exato do rótulo (claro e amigável),
+
+Comportamento ao clicar (para onde navega, que modal abre, que API chama),
+
+Se deve ter:
+
+estado “loading”,
+
+confirmação (ex.: ao excluir),
+
+mensagem de sucesso/erro.
+
+Melhorar UX/UI com foco em clareza e consistência
+
+Quero sugestões concretas de:
+
+Estrutura de layout:
+
+Cabeçalho,
+
+Barra lateral,
+
+Área de conteúdo,
+
+Breadcrumbs (se fizer sentido).
+
+Componentes reutilizáveis:
+
+Tabela de obrigações,
+
+Card de obrigação,
+
+Stepper de onboarding,
+
+Componentes de filtro e busca.
+
+Padrões visuais:
+
+Hierarquia de tipografia,
+
+Cores (ex.: usar cores consistentes para status: verde = cumprida, amarelo = pendente, vermelho = crítica),
+
+Ícones para reforçar ações (editar, excluir, anexar, filtrar).
+
+Mensagens de erro/sucesso:
+
+Sempre claras, em linguagem natural e sem termos técnicos desnecessários.
+
+Conectar o design às APIs oficiais
+
+Quero que você descreva pontos concretos da UX onde faria chamadas a APIs oficiais, por exemplo:
+
+Na tela de cadastro da empresa:
+
+Campo CNPJ → botão “Buscar dados na Receita” → chamada à API → preencher automaticamente nome, razão social, CNAE, endereço.
+
+Na tela de perfil operacional:
+
+Seleção de CNAE a partir de uma lista oficial (API ou base espelhada).
+
+Na parte de obrigações:
+
+Campo de “Ver legislação” → link direto para o texto oficial (API ou repositório público),
+
+Possibilidade de atualizar/validar se a norma ainda está vigente.
+
+Sugerir correções de bugs e problemas de fluxo
+
+Mesmo sem conseguir reproduzir todos os bugs, quero que você:
+
+Aponte pontos frágeis da arquitetura atual (ex.: acoplamento, rotas confusas, componentes monolíticos).
+
+Sugira melhorias em:
+
+Estrutura de rotas,
+
+Organização de estados (ex.: usar contexto, Zustand, Redux ou outro se fizer sentido),
+
+Separação entre camada de UI, camada de chamada de API e camada de lógica de negócio.
+
+🧾 Formato que eu quero na resposta
+
+Organize sua resposta em seções claras, por exemplo:
+
+Visão geral das principais melhorias
+
+Novo mapa de navegação (rotas e telas)
+
+Workflows detalhados (passo a passo do usuário)
+
+Botões e ações por tela (tabela resumida)
+
+Sugestões de UX/UI (componentes, layout, textos)
+
+Integrações com APIs oficiais (onde e como usar)
+
+Sugestões técnicas de refatoração e correção de bugs
+
+Sempre seja bem específico, dando exemplos de:
+
+Nomes de telas,
+
+Nomes de componentes,
+
+Nomes de botões,
+
+Mensagens de feedback,
+
+Campos de formulários.
+
+O objetivo é que, a partir da sua resposta, eu consiga pegar o código atual do repositório e implementar essas melhorias de forma direta, tanto no código quanto no design da interface.
