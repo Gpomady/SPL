@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from './Button';
 import { StatCard } from './StatCard';
 import { Modal, ConfirmDialog } from './Modal';
+import { ExportModal, ActionBar } from './ExportModal';
 import { 
   MonthlyTrendChart, 
   StatusDistributionChart, 
@@ -187,6 +188,7 @@ export const ComplianceDashboard: React.FC<ComplianceDashboardProps> = ({
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [activeModal, setActiveModal] = useState<'new' | null>(null);
+  const [showExportModal, setShowExportModal] = useState(false);
   
   const [filterStatus, setFilterStatus] = useState<string>('Todos');
   const [filterRisk, setFilterRisk] = useState<string>('Todos');
@@ -326,6 +328,10 @@ export const ComplianceDashboard: React.FC<ComplianceDashboardProps> = ({
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
+            
+            <Button variant="outline" size="sm" onClick={() => setShowExportModal(true)} className="hidden sm:flex">
+               <Download size={16} className="mr-2"/> Exportar
+            </Button>
             
             <Button size="sm" onClick={() => setActiveModal('new')} className="hidden sm:flex shadow-md shadow-teal-900/10">
                <Plus size={16} className="mr-2"/> Novo Registro
@@ -493,6 +499,16 @@ export const ComplianceDashboard: React.FC<ComplianceDashboardProps> = ({
           )}
         </div>
       )}
+
+      {/* Export Modal */}
+      <ExportModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        title={`Exportar ${getDashboardTitle()}`}
+        onExport={(format) => {
+          showToast(`Relatório ${getDashboardTitle()} exportado em ${format.toUpperCase()}!`);
+        }}
+      />
     </div>
   );
 };

@@ -29,9 +29,11 @@ import { Logo } from './Logo';
 interface SidebarProps {
   currentView: string;
   onChangeView: (view: string) => void;
+  onOpenSettings?: () => void;
+  onOpenHelp?: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onOpenSettings, onOpenHelp }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
     'compliance': true,
@@ -260,10 +262,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView }) =
               <ChevronRight size={14} className="rotate-180" /> Recolher
             </button>
             <div className="flex gap-1">
-              <button className="p-2 text-slate-500 hover:text-slate-300 hover:bg-slate-800/50 rounded-lg transition-colors">
+              <button 
+                onClick={onOpenSettings}
+                className="p-2 text-slate-500 hover:text-slate-300 hover:bg-slate-800/50 rounded-lg transition-colors"
+                title="Configurações"
+              >
                 <Settings size={16} />
               </button>
-              <button className="p-2 text-slate-500 hover:text-slate-300 hover:bg-slate-800/50 rounded-lg transition-colors">
+              <button 
+                onClick={onOpenHelp}
+                className="p-2 text-slate-500 hover:text-slate-300 hover:bg-slate-800/50 rounded-lg transition-colors"
+                title="Ajuda"
+              >
                 <HelpCircle size={16} />
               </button>
             </div>
