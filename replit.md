@@ -70,6 +70,23 @@ This is a Brazilian legal prediction system (SPL - Sistema de Previsão Legal) f
 
 ## Recent Changes (Dec 4, 2024)
 
+### Gestão SPL Improvements
+1. **ObligationsPanel Component**: New tabbed panel showing OL (Obrigações Legais), RL (Requisitos Legais), and Documents
+   - Clear applicability indicators (Se Aplica / Não se Aplica / A Avaliar)
+   - Status badges (Conforme, Pendente, Vencido, A Vencer)
+   - Risk level indicators (Crítico, Alto, Médio, Baixo)
+   - Expandable details with related requirements
+   - Progress bars showing overall applicability
+2. **FormBuilder Component**: Drag-and-drop questionnaire builder
+   - Multiple question types: text, boolean, select, multiselect, date, file, number
+   - Real-time preview of questionnaire
+   - Question reordering with drag-and-drop
+   - Options management for select/multiselect
+   - Save as draft or publish functionality
+3. **SPL Dashboard Enhancement**: Added "Obrigações Aplicáveis" as first tab
+   - Shows ObligationsPanel by default when navigating to Gestão SPL
+   - Integrated with existing action plans, monitoring, and library tabs
+
 ### UI/UX Improvements
 1. **LoginScreen Redesign**: Modern minimalist two-panel layout with gradient branding, feature list, password recovery modal
 2. **UserMenu Component**: User dropdown with profile, settings, help, and logout functionality
