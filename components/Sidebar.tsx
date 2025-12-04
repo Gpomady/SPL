@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   LayoutDashboard, 
@@ -10,7 +9,20 @@ import {
   ChevronDown, 
   ChevronRight,
   Scale,
-  ChevronUp,
+  Target,
+  BookOpen,
+  Shield,
+  Users,
+  Settings,
+  HelpCircle,
+  Sparkles,
+  TrendingUp,
+  FileCheck,
+  AlertTriangle,
+  CheckCircle2,
+  BarChart3,
+  Layers,
+  Database
 } from 'lucide-react';
 import { Logo } from './Logo';
 
@@ -22,79 +34,120 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
-    'ol': true,
-    'rl': false,
-    'doc': false,
+    'compliance': true,
+    'spl': false,
     'empresa': false,
-    'spl': true,
-    'docs': true
+    'docs': false
   });
 
   const toggleMenu = (key: string) => {
     setExpandedMenus(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  // Modern SubMenuItem with Left Accent
+  const NavItem = ({ 
+    icon: Icon, 
+    label, 
+    viewId, 
+    badge,
+    isActive 
+  }: { 
+    icon: any, 
+    label: string, 
+    viewId: string, 
+    badge?: number | string,
+    isActive?: boolean 
+  }) => (
+    <div 
+      onClick={() => onChangeView(viewId)}
+      className={`
+        flex items-center gap-3 px-3 py-2.5 mx-2 rounded-lg cursor-pointer transition-all duration-200 group relative
+        ${isActive 
+          ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-lg shadow-teal-900/20' 
+          : 'text-slate-400 hover:bg-slate-800/60 hover:text-white'}
+        ${collapsed ? 'justify-center mx-1 px-2' : ''}
+      `}
+    >
+      <Icon size={18} className={`shrink-0 ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-teal-400'}`}/>
+      {!collapsed && (
+        <>
+          <span className="text-sm font-medium flex-1">{label}</span>
+          {badge && (
+            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+              isActive ? 'bg-white/20 text-white' : 'bg-rose-500/20 text-rose-400'
+            }`}>
+              {badge}
+            </span>
+          )}
+        </>
+      )}
+      {collapsed && badge && (
+        <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+          {badge}
+        </span>
+      )}
+    </div>
+  );
+
   const SubMenuItem = ({ label, viewId, isActive }: { label: string, viewId: string, isActive?: boolean }) => (
     <div 
       onClick={() => onChangeView(viewId)}
       className={`
-        relative pl-11 pr-3 py-2 text-sm font-medium cursor-pointer transition-all duration-200
+        relative pl-10 pr-3 py-2 text-sm cursor-pointer transition-all duration-200 mx-2 rounded-md
         ${isActive 
-          ? 'text-white' 
-          : 'text-slate-400 hover:text-slate-200'}
+          ? 'text-teal-400 bg-teal-500/10 font-medium' 
+          : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/40'}
       `}
     >
-      {isActive && (
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-1 bg-[#0f766e] rounded-r-full shadow-[0_0_10px_rgba(15,118,110,0.5)]"></div>
-      )}
+      <div className={`absolute left-4 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full ${
+        isActive ? 'bg-teal-400' : 'bg-slate-600'
+      }`}></div>
       {label}
     </div>
   );
 
-  // Group Header
-  const MenuGroup = ({ label, id, children }: { label: string, id: string, children?: React.ReactNode }) => (
-    <div className="mb-1">
-      <div 
-        onClick={() => toggleMenu(id)}
-        className="flex items-center justify-between px-4 py-2.5 text-[11px] font-bold text-slate-500 uppercase tracking-widest cursor-pointer hover:text-slate-300 transition-colors select-none group"
-      >
-        <span>{label}</span>
-        <ChevronDown size={12} className={`transition-transform duration-200 ${expandedMenus[id] ? 'rotate-180' : ''}`}/>
-      </div>
-      <div className={`grid transition-all duration-300 ease-in-out ${expandedMenus[id] ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
-        <div className="overflow-hidden">
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-
-  // Main Item Wrapper
-  const MainMenuItem = ({ icon: Icon, label, id, children }: { icon: any, label: string, id: string, children?: React.ReactNode }) => {
+  const MenuSection = ({ 
+    icon: Icon, 
+    label, 
+    id, 
+    children,
+    badge
+  }: { 
+    icon: any, 
+    label: string, 
+    id: string, 
+    children?: React.ReactNode,
+    badge?: number
+  }) => {
     const isOpen = expandedMenus[id];
     
     return (
-      <div className="mb-2">
+      <div className="mb-1">
         <div 
           onClick={() => !collapsed && toggleMenu(id)}
           className={`
             flex items-center justify-between px-3 py-2.5 mx-2 rounded-lg cursor-pointer transition-all duration-200 group
-            ${isOpen ? 'bg-slate-800 text-white' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'}
-            ${collapsed ? 'justify-center mx-0' : ''}
+            ${isOpen ? 'bg-slate-800/80 text-white' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'}
+            ${collapsed ? 'justify-center mx-1 px-2' : ''}
           `}
         >
           <div className="flex items-center gap-3">
-            <Icon size={20} className={`transition-colors ${isOpen ? 'text-[#0f766e]' : 'text-slate-500 group-hover:text-slate-300'}`}/>
+            <Icon size={18} className={`shrink-0 transition-colors ${isOpen ? 'text-teal-400' : 'text-slate-500 group-hover:text-slate-300'}`}/>
             {!collapsed && <span className="text-sm font-medium">{label}</span>}
           </div>
           {!collapsed && children && (
-             <ChevronDown size={14} className={`text-slate-600 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}/>
+            <div className="flex items-center gap-2">
+              {badge && badge > 0 && (
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-teal-500/20 text-teal-400">
+                  {badge}
+                </span>
+              )}
+              <ChevronDown size={14} className={`text-slate-600 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}/>
+            </div>
           )}
         </div>
-        {!collapsed && (
-          <div className={`grid transition-all duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
-            <div className="overflow-hidden bg-slate-900/30 mx-2 rounded-b-lg mb-1">
+        {!collapsed && children && (
+          <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 opacity-100 mt-1' : 'max-h-0 opacity-0'}`}>
+            <div className="py-1">
               {children}
             </div>
           </div>
@@ -103,132 +156,126 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView }) =
     );
   };
 
+  const SectionLabel = ({ label }: { label: string }) => (
+    !collapsed ? (
+      <div className="px-4 py-2 mt-4 mb-1">
+        <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">{label}</span>
+      </div>
+    ) : (
+      <div className="h-px bg-slate-800 mx-3 my-4"></div>
+    )
+  );
+
   return (
-    <div className={`h-screen bg-[#0f172a] border-r border-slate-900 flex flex-col transition-all duration-300 ${collapsed ? 'w-20' : 'w-72'} shrink-0 z-40 hidden md:flex`}>
-      {/* Logo Area */}
-      <div className="h-20 flex items-center justify-center border-b border-slate-800/60 bg-[#0f172a]">
+    <div className={`h-screen bg-[#0f172a] flex flex-col transition-all duration-300 ${collapsed ? 'w-16' : 'w-64'} shrink-0 z-40 hidden md:flex`}>
+      
+      <div className={`h-16 flex items-center border-b border-slate-800/60 ${collapsed ? 'justify-center px-2' : 'px-4'}`}>
         <Logo size="sm" collapsed={collapsed} variant="light" />
       </div>
 
-      <div className="flex-1 overflow-y-auto py-6 space-y-1 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto py-4 custom-scrollbar">
         
-        {/* DASHBOARDS SECTION */}
-        {!collapsed ? (
-          <div className="mb-6 pb-2">
-             <div className="px-4 mb-2">
-               <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider">Principal</h3>
-             </div>
-             
-             {/* OL Dashboard Group */}
-             <MenuGroup label="Obrigações Legais" id="ol">
-                <SubMenuItem label="Visão Geral" viewId="home" isActive={currentView === 'home'} />
-                <SubMenuItem label="Por Escopo" viewId="ol-escopo" isActive={currentView === 'ol-escopo'} />
-                <SubMenuItem label="Por Área" viewId="ol-area" isActive={currentView === 'ol-area'} />
-                <SubMenuItem label="Por Subárea" viewId="ol-sub" isActive={currentView === 'ol-sub'} />
-                <SubMenuItem label="Por Responsável" viewId="ol-user" isActive={currentView === 'ol-user'} />
-             </MenuGroup>
+        <SectionLabel label="Principal" />
+        
+        <MenuSection icon={BarChart3} label="Conformidade" id="compliance">
+          <SubMenuItem label="Obrigações Legais (OL)" viewId="home" isActive={currentView === 'home' || currentView.startsWith('ol-')} />
+          <SubMenuItem label="Requisitos Legais (RL)" viewId="rl-geral" isActive={currentView.startsWith('rl-')} />
+          <SubMenuItem label="Documentos" viewId="doc-geral" isActive={currentView.startsWith('doc-')} />
+        </MenuSection>
 
-             {/* RL Dashboard Group */}
-             <MenuGroup label="Requisitos Legais" id="rl">
-                <SubMenuItem label="Visão Geral" viewId="rl-geral" isActive={currentView === 'rl-geral'}/>
-                <SubMenuItem label="Por Escopo" viewId="rl-escopo" isActive={currentView === 'rl-escopo'}/>
-                <SubMenuItem label="Por Área" viewId="rl-area" isActive={currentView === 'rl-area'}/>
-                <SubMenuItem label="Por Subárea" viewId="rl-sub" isActive={currentView === 'rl-sub'}/>
-                <SubMenuItem label="Por Responsável" viewId="rl-user" isActive={currentView === 'rl-user'}/>
-                <SubMenuItem label="Por Tipo de Ato" viewId="rl-ato" isActive={currentView === 'rl-ato'}/>
-             </MenuGroup>
-
-             {/* DOC Dashboard Group */}
-             <MenuGroup label="Documentos" id="doc">
-                <SubMenuItem label="Visão Geral" viewId="doc-geral" isActive={currentView === 'doc-geral'}/>
-                <SubMenuItem label="Por Área" viewId="doc-area" isActive={currentView === 'doc-area'}/>
-                <SubMenuItem label="Por Usuário" viewId="doc-user" isActive={currentView === 'doc-user'}/>
-            </MenuGroup>
-          </div>
-        ) : (
-          <div className="flex justify-center mb-6">
-             <div className="p-3 rounded-xl bg-[#0f766e] text-white shadow-lg shadow-teal-900/20">
-                <LayoutDashboard size={24} />
-             </div>
-          </div>
-        )}
-
-        {/* AI MODULE */}
-        <div className={`mb-2 ${collapsed ? 'flex justify-center' : 'px-2'}`}>
-             <div 
-                onClick={() => onChangeView('ai')}
-                className={`
-                    group flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-all duration-200 select-none
-                    ${currentView === 'ai' 
-                      ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/30' 
-                      : 'text-slate-400 hover:bg-slate-800 hover:text-white'}
-                    ${collapsed ? 'justify-center w-12 h-12 px-0' : ''}
-                `}
-            >
-                <Scale size={20} className={currentView === 'ai' ? 'text-white' : 'text-indigo-400'} />
-                {!collapsed && (
-                    <div className="flex flex-col">
-                        <span className="font-semibold text-sm">Assistente SPL</span>
-                        <span className="text-[10px] opacity-70 font-normal">Inteligência Artificial</span>
-                    </div>
-                )}
+        <div className="mx-2 my-2">
+          <div 
+            onClick={() => onChangeView('spl-actions')}
+            className={`
+              relative overflow-hidden flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all duration-300
+              ${currentView.startsWith('spl-') 
+                ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-lg shadow-teal-900/30' 
+                : 'bg-gradient-to-r from-slate-800 to-slate-800/50 text-slate-300 hover:from-slate-700 hover:to-slate-700/50'}
+              ${collapsed ? 'justify-center' : ''}
+            `}
+          >
+            {currentView.startsWith('spl-') && (
+              <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent"></div>
+            )}
+            <div className={`relative shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${
+              currentView.startsWith('spl-') ? 'bg-white/20' : 'bg-teal-500/20'
+            }`}>
+              <Target size={16} className={currentView.startsWith('spl-') ? 'text-white' : 'text-teal-400'} />
             </div>
+            {!collapsed && (
+              <div className="relative flex-1">
+                <span className="font-semibold text-sm block">Gestão SPL</span>
+                <span className="text-[10px] opacity-70">Sistema de Previsão Legal</span>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* OPERATIONAL MENUS */}
-        <div className="px-2 mt-4 mb-2">
-           {!collapsed && <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider px-2 mb-2">Operacional</h3>}
-        </div>
+        <NavItem 
+          icon={Sparkles} 
+          label="Assistente IA" 
+          viewId="ai" 
+          isActive={currentView === 'ai'}
+        />
 
-        <MainMenuItem icon={FileText} label="Gestão SPL" id="spl">
-            <SubMenuItem label="Planos de Ação" viewId="spl-actions" isActive={currentView === 'spl-actions'} />
-            <SubMenuItem label="Monitoramento" viewId="spl-updates" isActive={currentView === 'spl-updates'} />
-            <SubMenuItem label="Biblioteca" viewId="spl-library" isActive={currentView === 'spl-library'} />
-        </MainMenuItem>
+        <SectionLabel label="Operacional" />
 
-        <MainMenuItem icon={Building2} label="Empresa" id="empresa">
-            <SubMenuItem label="Dados Corporativos" viewId="empresa-dados" isActive={currentView === 'empresa-dados'} />
-            <SubMenuItem label="Estrutura & Áreas" viewId="empresa-org" isActive={currentView === 'empresa-org'} />
-            <SubMenuItem label="Equipe & Acessos" viewId="empresa-team" isActive={currentView === 'empresa-team'} />
-            <SubMenuItem label="Auditoria" viewId="empresa-log" isActive={currentView === 'empresa-log'} />
-        </MainMenuItem>
+        <MenuSection icon={Building2} label="Empresa" id="empresa">
+          <SubMenuItem label="Dados Corporativos" viewId="empresa-dados" isActive={currentView === 'empresa-dados'} />
+          <SubMenuItem label="Estrutura & Áreas" viewId="empresa-org" isActive={currentView === 'empresa-org'} />
+          <SubMenuItem label="Equipe & Acessos" viewId="empresa-team" isActive={currentView === 'empresa-team'} />
+          <SubMenuItem label="Auditoria" viewId="empresa-log" isActive={currentView === 'empresa-log'} />
+        </MenuSection>
         
-        <div 
-            onClick={() => onChangeView('questionario')}
-            className={`
-               flex items-center gap-3 px-3 py-2.5 mx-2 rounded-lg cursor-pointer transition-colors 
-               ${currentView === 'questionario' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'} 
-               ${collapsed ? 'justify-center mx-0' : ''}
-            `}
-        >
-            <ClipboardList size={20} className={currentView === 'questionario' ? 'text-[#0f766e]' : 'text-slate-500'} />
-            {!collapsed && <span className="text-sm font-medium">Questionário</span>}
-        </div>
+        <NavItem 
+          icon={ClipboardList} 
+          label="Questionários" 
+          viewId="questionario" 
+          isActive={currentView === 'questionario'}
+        />
 
-        <MainMenuItem icon={Folder} label="Gestão Arquivos" id="docs">
-            <SubMenuItem label="Fornecedores" viewId="documents-fornecedores" isActive={currentView === 'documents-fornecedores'} />
-            <SubMenuItem label="Empresa" viewId="documents-empresa" isActive={currentView === 'documents-empresa'} />
-            <SubMenuItem label="Lixeira" viewId="documents-lixeira" isActive={currentView === 'documents-lixeira'} />
-        </MainMenuItem>
+        <MenuSection icon={Folder} label="Arquivos" id="docs">
+          <SubMenuItem label="Fornecedores" viewId="documents-fornecedores" isActive={currentView === 'documents-fornecedores'} />
+          <SubMenuItem label="Empresa" viewId="documents-empresa" isActive={currentView === 'documents-empresa'} />
+          <SubMenuItem label="Lixeira" viewId="documents-lixeira" isActive={currentView === 'documents-lixeira'} />
+        </MenuSection>
         
-         <div 
-            onClick={() => onChangeView('avisos')}
-            className={`
-               flex items-center gap-3 px-3 py-2.5 mx-2 rounded-lg cursor-pointer transition-colors 
-               ${currentView === 'avisos' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'} 
-               ${collapsed ? 'justify-center mx-0' : ''}
-            `}
-        >
-            <Bell size={20} className={currentView === 'avisos' ? 'text-[#0f766e]' : 'text-slate-500'}/>
-            {!collapsed && <span className="text-sm font-medium">Avisos</span>}
-        </div>
+        <NavItem 
+          icon={Bell} 
+          label="Notificações" 
+          viewId="avisos" 
+          badge={3}
+          isActive={currentView === 'avisos'}
+        />
 
       </div>
 
-      <div className="p-4 border-t border-slate-800/60 bg-[#0f172a]">
-        <button onClick={() => setCollapsed(!collapsed)} className="text-[10px] text-slate-500 hover:text-white uppercase tracking-wider font-bold flex items-center justify-center gap-2 w-full transition-colors h-8 rounded hover:bg-slate-800">
-            {collapsed ? <ChevronRight size={14}/> : <><ChevronDown size={14} className="rotate-90" /> Recolher Menu</>}
-        </button>
+      <div className="p-3 border-t border-slate-800/60">
+        {!collapsed ? (
+          <div className="flex items-center justify-between">
+            <button 
+              onClick={() => setCollapsed(true)} 
+              className="text-xs text-slate-500 hover:text-slate-300 flex items-center gap-2 px-2 py-1.5 rounded hover:bg-slate-800/50 transition-colors"
+            >
+              <ChevronRight size={14} className="rotate-180" /> Recolher
+            </button>
+            <div className="flex gap-1">
+              <button className="p-2 text-slate-500 hover:text-slate-300 hover:bg-slate-800/50 rounded-lg transition-colors">
+                <Settings size={16} />
+              </button>
+              <button className="p-2 text-slate-500 hover:text-slate-300 hover:bg-slate-800/50 rounded-lg transition-colors">
+                <HelpCircle size={16} />
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button 
+            onClick={() => setCollapsed(false)} 
+            className="w-full flex justify-center p-2 text-slate-500 hover:text-slate-300 hover:bg-slate-800/50 rounded-lg transition-colors"
+          >
+            <ChevronRight size={16} />
+          </button>
+        )}
       </div>
     </div>
   );
