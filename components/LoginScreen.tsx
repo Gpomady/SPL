@@ -38,7 +38,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
     try {
       const response = isRegisterMode
         ? await authApi.register(email, password, name)
-        : await authApi.login(email, password);
+        : await authApi.login({ email, password });
       
       if (response.success && response.data) {
         api.setAccessToken(response.data.accessToken);

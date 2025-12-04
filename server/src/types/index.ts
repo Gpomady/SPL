@@ -1,9 +1,16 @@
 import { Request } from 'express';
 
+export type GlobalRole = 'MASTER' | 'PLATFORM_SUPPORT' | 'USER';
+export type CompanyRole = 'ADMIN' | 'MANAGER' | 'COLLABORATOR' | 'VIEWER';
+export type MembershipStatus = 'pending' | 'active' | 'suspended';
+export type CompanyStatus = 'pending_setup' | 'active' | 'suspended' | 'cancelled';
+
 export interface JwtPayload {
   userId: string;
   email: string;
-  role: string;
+  globalRole: GlobalRole;
+  activeCompanyId?: string;
+  companyRole?: CompanyRole;
 }
 
 export interface AuthRequest extends Request {
@@ -33,6 +40,7 @@ export interface PaginationParams {
 export interface LoginRequest {
   email: string;
   password: string;
+  companyId?: string;
 }
 
 export interface RegisterRequest {
@@ -57,6 +65,23 @@ export interface CompanyCreateRequest {
   address?: string;
   cnaePrincipal: string;
   cnaesSecundarios?: string[];
+  adminEmail: string;
+  adminName: string;
+  slaTier?: string;
+  billingEmail?: string;
+  notes?: string;
+}
+
+export interface InviteUserRequest {
+  email: string;
+  name: string;
+  companyId: string;
+  companyRole: CompanyRole;
+}
+
+export interface AcceptInvitationRequest {
+  token: string;
+  password: string;
 }
 
 export interface ObligationCreateRequest {
@@ -72,4 +97,29 @@ export interface ObligationCreateRequest {
   riskLevel?: string;
   responsible?: string;
   priority?: string;
+}
+
+export interface UserWithMemberships {
+  id: string;
+  email: string;
+  name: string;
+  globalRole: GlobalRole;
+  avatar: string | null;
+  isActive: boolean;
+  mustChangePassword: boolean;
+  lastLogin: Date | null;
+  createdAt: Date;
+  memberships: {
+    id: string;
+    companyId: string;
+    companyRole: CompanyRole;
+    status: MembershipStatus;
+    company: {
+      id: string;
+      razaoSocial: string;
+      nomeFantasia: string | null;
+      cnpj: string;
+      status: CompanyStatus;
+    };
+  }[];
 }

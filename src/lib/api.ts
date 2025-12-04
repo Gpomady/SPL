@@ -154,16 +154,37 @@ export class ApiError extends Error {
 
 export const api = new ApiClient();
 
+export type GlobalRole = 'MASTER' | 'PLATFORM_SUPPORT' | 'USER';
+export type CompanyRole = 'ADMIN' | 'MANAGER' | 'COLLABORATOR' | 'VIEWER';
+
+export interface CompanyMembership {
+  id: string;
+  companyId: string;
+  companyRole: CompanyRole;
+  status: 'pending' | 'active' | 'suspended';
+  company: {
+    id: string;
+    razaoSocial: string;
+    nomeFantasia: string | null;
+    cnpj: string;
+    status: string;
+  };
+}
+
 export interface User {
   id: string;
   email: string;
   name: string;
   avatar?: string | null;
+  globalRole?: GlobalRole;
+  memberships?: CompanyMembership[];
+  isActive?: boolean;
+  mustChangePassword?: boolean;
 }
 
 export const authApi = {
-  login: (email: string, password: string) =>
-    api.post<{ user: User; accessToken: string }>('/auth/login', { email, password }),
+  login: (data: { email: string; password: string; companyId?: string }) =>
+    api.post<{ user: User; accessToken: string; companies?: any[] }>('/auth/login', data),
   
   register: (email: string, password: string, name: string) =>
     api.post<{ user: User; accessToken: string }>('/auth/register', { email, password, name }),

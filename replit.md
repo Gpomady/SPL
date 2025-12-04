@@ -70,6 +70,42 @@ This is a Brazilian legal prediction system (SPL - Sistema de Previsão Legal) f
 
 ## Recent Changes (Dec 4, 2024)
 
+### Multi-Tenant B2B SaaS Architecture
+1. **Role-Based Access Control**
+   - GlobalRole: MASTER (platform admin), PLATFORM_SUPPORT (support staff), USER (regular users)
+   - CompanyRole: ADMIN (company admin), MANAGER, COLLABORATOR, VIEWER
+   - company_memberships table linking users to companies with specific roles
+
+2. **Authentication System**
+   - JWT authentication with httpOnly cookies
+   - Access tokens (15min) + Refresh tokens (7 days)
+   - Company context switching in tokens
+   - Unique token IDs to prevent duplicates
+
+3. **Clean System Start**
+   - System starts with no pre-loaded data
+   - SetupScreen for creating Master Administrator
+   - GET /api/admin/setup-status endpoint to check if setup needed
+   - POST /api/admin/create-master for initial admin creation
+
+4. **Email Invitation System**
+   - Invite users by email with expirable tokens (7 days)
+   - Company admins can invite collaborators
+   - InvitationScreen for accepting invitations
+   - Password setup during invitation acceptance
+
+5. **Key Components**
+   - SetupScreen: Initial master admin creation
+   - MasterDashboard: Platform-wide management for MASTER users
+   - InvitationScreen: Accept email invitations
+   - LoginScreen: Enhanced to support company context
+
+6. **Backend Structure**
+   - server/src/db/schema.ts: Multi-tenant database schema
+   - server/src/services/authService.ts: Authentication logic
+   - server/src/routes/admin.ts: Master admin endpoints
+   - server/src/middleware/auth.ts: JWT validation + role guards
+
 ### Gestão SPL Improvements
 1. **ObligationsPanel Component**: New tabbed panel showing OL (Obrigações Legais), RL (Requisitos Legais), and Documents
    - Clear applicability indicators (Se Aplica / Não se Aplica / A Avaliar)

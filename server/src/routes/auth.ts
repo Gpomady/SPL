@@ -47,9 +47,37 @@ router.post('/login', authLimiter, async (req, res: Response<ApiResponse>) => {
       success: true,
       data: {
         user: result.user,
+        companies: result.companies,
         accessToken: result.tokens.accessToken,
       },
       message: 'Login realizado com sucesso',
+    });
+  } catch (error) {
+    throw error;
+  }
+});
+
+router.post('/switch-company', authenticate, async (req: AuthRequest, res: Response<ApiResponse>) => {
+  try {
+    const { companyId } = req.body;
+    
+    if (!companyId) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID da empresa é obrigatório',
+      });
+    }
+    
+    const tokens = await authService.switchCompany(req.user!.userId, companyId);
+    
+    res.cookie('refreshToken', tokens.refreshToken, COOKIE_OPTIONS);
+    
+    res.json({
+      success: true,
+      data: {
+        accessToken: tokens.accessToken,
+      },
+      message: 'Empresa alterada com sucesso',
     });
   } catch (error) {
     throw error;
@@ -144,6 +172,45 @@ router.post('/change-password', authenticate, async (req: AuthRequest, res: Resp
     res.json({
       success: true,
       message: 'Senha alterada com sucesso',
+    });
+  } catch (error) {
+    throw error;
+  }
+});
+
+router.get('/invitation/:token', async (req, res: Response<ApiResponse>) => {
+  try {
+    const { token } = req.params;
+    const invitation = await authService.getInvitationByToken(token);
+    
+    res.json({
+      success: true,
+      data: invitation,
+    });
+  } catch (error) {
+    throw error;
+  }
+});
+
+router.post('/accept-invitation', async (req, res: Response<ApiResponse>) => {
+  try {
+    const schema = z.object({
+      token: z.string(),
+      password: passwordSchema,
+    });
+    
+    const data = schema.parse(req.body);
+    const result = await authService.acceptInvitation(data);
+    
+    res.cookie('refreshToken', result.tokens.refreshToken, COOKIE_OPTIONS);
+    
+    res.json({
+      success: true,
+      data: {
+        user: result.user,
+        accessToken: result.tokens.accessToken,
+      },
+      message: 'Conta ativada com sucesso',
     });
   } catch (error) {
     throw error;
