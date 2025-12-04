@@ -2,6 +2,14 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from './Button';
 import { StatCard } from './StatCard';
+import { Modal, ConfirmDialog } from './Modal';
+import { 
+  MonthlyTrendChart, 
+  StatusDistributionChart, 
+  BarComparisonChart, 
+  RiskHeatmap,
+  ProgressLineChart 
+} from './Charts';
 import { 
   CheckCircle2, 
   XCircle, 
@@ -36,7 +44,10 @@ import {
   ArrowRight,
   User,
   X,
-  FileText
+  FileText,
+  Edit,
+  Trash2,
+  Eye
 } from 'lucide-react';
 
 interface ComplianceDashboardProps {
@@ -486,127 +497,193 @@ export const ComplianceDashboard: React.FC<ComplianceDashboardProps> = ({
   );
 };
 
+const MONTHLY_TREND_DATA = [
+  { month: 'Jan', conformidade: 72, naoConformidade: 8 },
+  { month: 'Fev', conformidade: 75, naoConformidade: 6 },
+  { month: 'Mar', conformidade: 78, naoConformidade: 5 },
+  { month: 'Abr', conformidade: 80, naoConformidade: 4 },
+  { month: 'Mai', conformidade: 79, naoConformidade: 5 },
+  { month: 'Jun', conformidade: 82, naoConformidade: 3 },
+  { month: 'Jul', conformidade: 85, naoConformidade: 3 },
+  { month: 'Ago', conformidade: 83, naoConformidade: 4 },
+  { month: 'Set', conformidade: 86, naoConformidade: 2 },
+  { month: 'Out', conformidade: 88, naoConformidade: 2 },
+  { month: 'Nov', conformidade: 90, naoConformidade: 2 },
+  { month: 'Dez', conformidade: 92, naoConformidade: 1 }
+];
+
+const STATUS_DISTRIBUTION_DATA = [
+  { name: 'Conforme', value: 494, color: '#10b981' },
+  { name: 'Pendente', value: 289, color: '#f59e0b' },
+  { name: 'Vencido', value: 45, color: '#ef4444' },
+  { name: 'N/A', value: 156, color: '#94a3b8' }
+];
+
+const AREA_COMPARISON_DATA = [
+  { name: 'QSMS', atual: 85, anterior: 72 },
+  { name: 'SGI', atual: 92, anterior: 85 },
+  { name: 'Jurídico', atual: 78, anterior: 70 },
+  { name: 'RH', atual: 95, anterior: 90 },
+  { name: 'Operações', atual: 88, anterior: 80 }
+];
+
+const RISK_DATA = [
+  { area: 'Meio Ambiente', baixo: 40, medio: 25, alto: 10, critico: 5 },
+  { area: 'Segurança', baixo: 35, medio: 30, alto: 15, critico: 8 },
+  { area: 'Qualidade', baixo: 50, medio: 20, alto: 8, critico: 2 },
+  { area: 'Trabalhista', baixo: 45, medio: 28, alto: 12, critico: 3 }
+];
+
+const PROGRESS_DATA = [
+  { name: 'Jan', progresso: 65, meta: 80 },
+  { name: 'Fev', progresso: 70, meta: 80 },
+  { name: 'Mar', progresso: 72, meta: 80 },
+  { name: 'Abr', progresso: 78, meta: 80 },
+  { name: 'Mai', progresso: 82, meta: 85 },
+  { name: 'Jun', progresso: 85, meta: 85 }
+];
+
 const OLSpecificCharts = () => {
-    // Semi-Circle Gauge math
     const percentage = 83;
-    const radius = 80;
-    const stroke = 8; // Thinner stroke
-    const normalizedRadius = radius - stroke * 2;
-    const circumference = normalizedRadius * 2 * Math.PI;
-    const strokeDashoffset = circumference - (percentage / 100) * (circumference / 2); 
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
-            
-            {/* 1. MAIN GAUGE */}
-            <div className="bg-white p-8 rounded-xl border border-slate-100 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.1)] flex flex-col items-center justify-between min-h-[300px]">
-                <div className="text-center mb-4">
-                    <h4 className="text-sm font-bold text-slate-500 uppercase tracking-widest">Índice Geral</h4>
-                    <span className="text-xs text-slate-400">Meta Mensal: 80%</span>
-                </div>
+        <div className="space-y-6 animate-fade-in">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="bg-white p-8 rounded-xl border border-slate-100 shadow-sm flex flex-col items-center justify-between min-h-[300px]">
+                    <div className="text-center mb-4">
+                        <h4 className="text-sm font-bold text-slate-700">Índice de Conformidade</h4>
+                        <span className="text-xs text-slate-400">Meta Mensal: 80%</span>
+                    </div>
 
-                <div className="relative w-64 h-32 mt-2">
-                    <svg height="100%" width="100%" viewBox="0 0 200 110" className="overflow-visible">
-                        <path 
-                            d="M 20 100 A 80 80 0 0 1 180 100" 
-                            stroke="#e2e8f0" strokeWidth="12" fill="none" strokeLinecap="round"
-                        />
-                        <path 
-                            d="M 20 100 A 80 80 0 0 1 180 100" 
-                            stroke="url(#gradient-ol)" strokeWidth="12" fill="none" strokeLinecap="round"
-                            strokeDasharray={Math.PI * 80}
-                            strokeDashoffset={(Math.PI * 80) * (1 - percentage/100)}
-                            className="transition-all duration-1000 ease-out"
-                        />
-                        <defs>
-                            <linearGradient id="gradient-ol" x1="0%" y1="0%" x2="100%" y2="0%">
-                                <stop offset="0%" stopColor="#34d399" />
-                                <stop offset="100%" stopColor="#059669" />
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 text-center translate-y-2">
-                        <span className="text-5xl font-bold text-slate-800 tracking-tighter">{percentage}%</span>
+                    <div className="relative w-64 h-32 mt-2">
+                        <svg height="100%" width="100%" viewBox="0 0 200 110" className="overflow-visible">
+                            <path d="M 20 100 A 80 80 0 0 1 180 100" stroke="#e2e8f0" strokeWidth="12" fill="none" strokeLinecap="round"/>
+                            <path d="M 20 100 A 80 80 0 0 1 180 100" stroke="url(#gradient-ol)" strokeWidth="12" fill="none" strokeLinecap="round"
+                                strokeDasharray={Math.PI * 80}
+                                strokeDashoffset={(Math.PI * 80) * (1 - percentage/100)}
+                                className="transition-all duration-1000 ease-out"/>
+                            <defs>
+                                <linearGradient id="gradient-ol" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stopColor="#34d399" />
+                                    <stop offset="100%" stopColor="#059669" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 text-center translate-y-2">
+                            <span className="text-5xl font-bold text-slate-800 tracking-tighter">{percentage}%</span>
+                        </div>
+                    </div>
+
+                    <div className="w-full flex justify-center gap-12 mt-8">
+                        <div className="text-center">
+                            <div className="text-2xl font-bold text-emerald-600">494</div>
+                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Atendidos</div>
+                        </div>
+                        <div className="text-center">
+                            <div className="text-2xl font-bold text-amber-500">289</div>
+                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Pendentes</div>
+                        </div>
                     </div>
                 </div>
 
-                <div className="w-full flex justify-center gap-12 mt-8">
-                    <div className="text-center">
-                        <div className="text-2xl font-bold text-slate-800">494</div>
-                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Atendidos</div>
-                    </div>
-                    <div className="text-center">
-                        <div className="text-2xl font-bold text-amber-500">289</div>
-                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Pendentes</div>
-                    </div>
-                </div>
-            </div>
-
-            {/* 2. THEMATIC BREAKDOWN */}
-            <div className="bg-white p-8 rounded-xl border border-slate-100 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.1)] flex flex-col min-h-[300px]">
-                <h4 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-8">Performance por Tema</h4>
-                
-                <div className="space-y-6 flex-1">
-                    {[
-                        { label: 'Licenciamento', val: 95, icon: FileText, color: 'bg-emerald-500' },
-                        { label: 'Resíduos Sólidos', val: 72, icon:  Leaf, color: 'bg-emerald-600' },
-                        { label: 'Efluentes Líquidos', val: 100, icon: Droplets, color: 'bg-sky-500' },
-                        { label: 'Segurança (NRs)', val: 68, icon:  Zap, color: 'bg-amber-500' },
-                    ].map((item, i) => (
-                        <div key={i}>
-                            <div className="flex justify-between items-end mb-2">
-                                <span className="text-sm font-medium text-slate-700 flex items-center gap-2">
-                                    <item.icon size={16} className="text-slate-400"/> {item.label}
-                                </span>
-                                <span className="text-xs font-bold text-slate-900">{item.val}%</span>
+                <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm flex flex-col min-h-[300px]">
+                    <h4 className="text-sm font-bold text-slate-700 mb-6">Performance por Tema</h4>
+                    <div className="space-y-5 flex-1">
+                        {[
+                            { label: 'Licenciamento', val: 95, icon: FileText, color: 'bg-emerald-500' },
+                            { label: 'Resíduos Sólidos', val: 72, icon: Leaf, color: 'bg-teal-500' },
+                            { label: 'Efluentes Líquidos', val: 100, icon: Droplets, color: 'bg-sky-500' },
+                            { label: 'Segurança (NRs)', val: 68, icon: Zap, color: 'bg-amber-500' },
+                        ].map((item, i) => (
+                            <div key={i}>
+                                <div className="flex justify-between items-end mb-2">
+                                    <span className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                                        <item.icon size={16} className="text-slate-400"/> {item.label}
+                                    </span>
+                                    <span className="text-xs font-bold text-slate-900">{item.val}%</span>
+                                </div>
+                                <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                    <div className={`h-full rounded-full transition-all duration-1000 ${item.color}`} style={{ width: `${item.val}%` }}></div>
+                                </div>
                             </div>
-                            <div className="w-full bg-slate-50 h-2 rounded-full overflow-hidden">
-                                <div className={`h-full rounded-full transition-all duration-1000 ${item.color}`} style={{ width: `${item.val}%` }}></div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* 3. RISK & ACTIONS */}
-            <div className="bg-white p-8 rounded-xl border border-slate-100 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.1)] flex flex-col min-h-[300px]">
-                <h4 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-6">Mapa de Riscos</h4>
-                
-                <div className="flex-1 flex flex-col justify-center gap-8">
-                    {/* Risk Bar */}
-                    <div>
-                        <div className="flex h-10 rounded-lg w-full overflow-hidden shadow-inner">
-                            <div className="bg-rose-500 w-[15%] flex items-center justify-center text-white text-xs font-bold transition-all hover:bg-rose-600 cursor-pointer" title="Alto">15%</div>
-                            <div className="bg-amber-400 w-[35%] flex items-center justify-center text-white text-xs font-bold transition-all hover:bg-amber-500 cursor-pointer" title="Médio">35%</div>
-                            <div className="bg-slate-200 w-[50%] flex items-center justify-center text-slate-500 text-xs font-bold transition-all hover:bg-slate-300 cursor-pointer" title="Baixo">50%</div>
-                        </div>
-                        <div className="flex justify-between mt-2 text-[10px] text-slate-400 font-medium uppercase tracking-wide">
-                            <span className="flex items-center gap-1"><div className="w-2 h-2 bg-rose-500 rounded-full"></div> Alto Risco</span>
-                            <span className="flex items-center gap-1"><div className="w-2 h-2 bg-amber-400 rounded-full"></div> Médio</span>
-                            <span className="flex items-center gap-1"><div className="w-2 h-2 bg-slate-300 rounded-full"></div> Baixo</span>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="p-4 bg-slate-50 rounded-lg border border-slate-100 text-center">
-                            <span className="block text-3xl font-bold text-slate-800">12</span>
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Planos Abertos</span>
-                        </div>
-                        <div className="p-4 bg-rose-50 rounded-lg border border-rose-100 text-center">
-                            <span className="block text-3xl font-bold text-rose-600">3</span>
-                            <span className="text-[10px] font-bold text-rose-400 uppercase tracking-wider">Atrasados</span>
-                        </div>
+                        ))}
                     </div>
                 </div>
+
+                <StatusDistributionChart data={STATUS_DISTRIBUTION_DATA} title="Distribuição por Status" />
             </div>
 
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <MonthlyTrendChart data={MONTHLY_TREND_DATA} title="Evolução da Conformidade" />
+                <BarComparisonChart data={AREA_COMPARISON_DATA} title="Comparativo por Área" />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <RiskHeatmap data={RISK_DATA} title="Matriz de Riscos por Área" />
+                <ProgressLineChart data={PROGRESS_DATA} title="Progresso vs Meta" />
+            </div>
         </div>
     )
 }
 
-// ... (RLSpecificCharts and DocSpecificCharts would follow similar redesign, keeping structure but cleaning UI)
-const RLSpecificCharts = () => <div className="p-8 bg-white rounded-xl border border-slate-100 text-center text-slate-400">Gráficos de RL (Placeholder Style)</div>;
-const DocSpecificCharts = () => <div className="p-8 bg-white rounded-xl border border-slate-100 text-center text-slate-400">Gráficos de Doc (Placeholder Style)</div>;
+const RLSpecificCharts = () => {
+    const rlStatusData = [
+        { name: 'Conhecimento', value: 215, color: '#0f766e' },
+        { name: 'Em Análise', value: 89, color: '#3b82f6' },
+        { name: 'Pendente', value: 156, color: '#f59e0b' },
+        { name: 'N/A', value: 340, color: '#94a3b8' }
+    ];
+
+    const rlTrendData = [
+        { month: 'Jan', conformidade: 45, naoConformidade: 12 },
+        { month: 'Fev', conformidade: 52, naoConformidade: 10 },
+        { month: 'Mar', conformidade: 58, naoConformidade: 8 },
+        { month: 'Abr', conformidade: 65, naoConformidade: 7 },
+        { month: 'Mai', conformidade: 70, naoConformidade: 5 },
+        { month: 'Jun', conformidade: 75, naoConformidade: 4 }
+    ];
+
+    return (
+        <div className="space-y-6 animate-fade-in">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <StatusDistributionChart data={rlStatusData} title="Requisitos por Status" />
+                <MonthlyTrendChart data={rlTrendData} title="Evolução do Conhecimento Legal" />
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <RiskHeatmap data={RISK_DATA} title="Riscos por Escopo" />
+                <BarComparisonChart data={AREA_COMPARISON_DATA} title="Requisitos por Área" />
+            </div>
+        </div>
+    );
+};
+
+const DocSpecificCharts = () => {
+    const docStatusData = [
+        { name: 'Válidos', value: 850, color: '#10b981' },
+        { name: 'Vencidos', value: 18, color: '#ef4444' },
+        { name: 'A Vencer', value: 45, color: '#f59e0b' },
+        { name: 'Pendente Upload', value: 137, color: '#94a3b8' }
+    ];
+
+    const docTrendData = [
+        { month: 'Jan', conformidade: 820, naoConformidade: 30 },
+        { month: 'Fev', conformidade: 835, naoConformidade: 25 },
+        { month: 'Mar', conformidade: 840, naoConformidade: 20 },
+        { month: 'Abr', conformidade: 845, naoConformidade: 18 },
+        { month: 'Mai', conformidade: 848, naoConformidade: 15 },
+        { month: 'Jun', conformidade: 850, naoConformidade: 18 }
+    ];
+
+    return (
+        <div className="space-y-6 animate-fade-in">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <StatusDistributionChart data={docStatusData} title="Documentos por Status" />
+                <MonthlyTrendChart data={docTrendData} title="Evolução Documental" />
+            </div>
+            <BarComparisonChart data={AREA_COMPARISON_DATA} title="Documentos por Área" />
+        </div>
+    );
+};
 
 
 // --- REDESIGNED COMPONENT: DETAILED REQUIREMENT CARD (Clean SaaS) ---
