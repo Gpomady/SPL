@@ -70,6 +70,14 @@ This is a Brazilian legal prediction system (SPL - Sistema de Previsão Legal) f
 
 ## Recent Changes (Dec 4, 2024)
 
+### UI/UX Improvements
+1. **LoginScreen Redesign**: Modern minimalist two-panel layout with gradient branding, feature list, password recovery modal
+2. **UserMenu Component**: User dropdown with profile, settings, help, and logout functionality
+3. **SettingsModal**: Full settings panel with General, Notifications, and Security tabs
+4. **HelpModal**: FAQ accordion with 6 common questions and support contact section
+5. **ExportModal**: Export functionality with Excel/PDF/CSV format options
+6. **Mobile Menu**: Fully functional hamburger menu with all navigation items
+
 ### New Service Layer Architecture
 1. **Type System**: Comprehensive TypeScript types for Company, CNAE, LegalRequirement, Obligation, Evidence, ActionPlan
 2. **CNPJ Service**: Real API integration with BrasilAPI for company data lookup
@@ -85,6 +93,8 @@ This is a Brazilian legal prediction system (SPL - Sistema de Previsão Legal) f
 6. **OnboardingFlow**: 4-step company registration (CNPJ → Confirm → Profile → Generate)
 7. **ObligationDetailModal**: Detailed view with evidence upload and history
 8. **ExecutiveDashboard**: Executive KPIs with conformity gauge
+9. **UserMenu**: User profile dropdown with settings, help, logout
+10. **ExportModal**: Export reports in multiple formats
 
 ### State Management
 - **AppContext**: Centralized state with useReducer
