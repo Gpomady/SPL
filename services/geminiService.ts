@@ -1,10 +1,22 @@
 import { GoogleGenAI } from "@google/genai";
 
-// Initialize the client
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Lazy initialization of the client
+let ai: GoogleGenAI | null = null;
+
+const getClient = () => {
+  if (!ai) {
+    const apiKey = (window as any).__GEMINI_API_KEY__;
+    if (!apiKey) {
+      throw new Error("API key não configurada. Por favor, adicione GEMINI_API_KEY na aba Secrets do Replit ou em .env.local para usar o assistente jurídico.");
+    }
+    ai = new GoogleGenAI({ apiKey });
+  }
+  return ai;
+};
 
 export const analyzeLegalCase = async (caseDescription: string): Promise<string> => {
   try {
+    const client = getClient();
     const model = 'gemini-2.5-flash';
     
     const prompt = `
@@ -23,7 +35,7 @@ export const analyzeLegalCase = async (caseDescription: string): Promise<string>
       Mantenha o tom profissional, direto e analítico.
     `;
 
-    const response = await ai.models.generateContent({
+    const response = await client.models.generateContent({
       model: model,
       contents: prompt,
     });
@@ -31,6 +43,9 @@ export const analyzeLegalCase = async (caseDescription: string): Promise<string>
     return response.text || "Não foi possível gerar a análise no momento.";
   } catch (error) {
     console.error("Erro na análise Gemini:", error);
+    if (error instanceof Error && error.message.includes("API key não configurada")) {
+      return error.message;
+    }
     return "Ocorreu um erro ao conectar com o servidor de IA. Por favor, tente novamente.";
   }
 };
