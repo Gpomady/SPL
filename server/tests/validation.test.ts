@@ -40,8 +40,9 @@ describe('Validation Utils', () => {
   });
 
   describe('sanitizeInput', () => {
-    it('should remove HTML tags', () => {
-      expect(sanitizeInput('<script>alert("xss")</script>')).toBe('alert("xss")');
+    it('should remove HTML tags and escape special chars', () => {
+      const result = sanitizeInput('<script>alert("xss")</script>');
+      expect(result).toBe('alert(&quot;xss&quot;)');
     });
 
     it('should escape special characters', () => {

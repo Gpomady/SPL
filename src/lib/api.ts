@@ -19,25 +19,13 @@ interface ApiResponse<T = any> {
 
 class ApiClient {
   private accessToken: string | null = null;
-  private refreshToken: string | null = null;
 
-  constructor() {
-    this.accessToken = localStorage.getItem('accessToken');
-    this.refreshToken = localStorage.getItem('refreshToken');
-  }
-
-  setTokens(accessToken: string, refreshToken: string) {
+  setAccessToken(accessToken: string) {
     this.accessToken = accessToken;
-    this.refreshToken = refreshToken;
-    localStorage.setItem('accessToken', accessToken);
-    localStorage.setItem('refreshToken', refreshToken);
   }
 
   clearTokens() {
     this.accessToken = null;
-    this.refreshToken = null;
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
   }
 
   isAuthenticated(): boolean {
@@ -45,13 +33,11 @@ class ApiClient {
   }
 
   private async refreshAccessToken(): Promise<boolean> {
-    if (!this.refreshToken) return false;
-
     try {
       const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken: this.refreshToken }),
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -59,10 +45,10 @@ class ApiClient {
         return false;
       }
 
-      const data: ApiResponse<{ accessToken: string; refreshToken: string }> = await response.json();
+      const data: ApiResponse<{ accessToken: string }> = await response.json();
       
       if (data.success && data.data) {
-        this.setTokens(data.data.accessToken, data.data.refreshToken);
+        this.accessToken = data.data.accessToken;
         return true;
       }
 
@@ -107,13 +93,14 @@ class ApiClient {
       let response = await fetch(url, {
         ...fetchOptions,
         headers,
+        credentials: 'include',
       });
 
-      if (response.status === 401 && this.refreshToken) {
+      if (response.status === 401) {
         const refreshed = await this.refreshAccessToken();
         if (refreshed) {
           (headers as Record<string, string>)['Authorization'] = `Bearer ${this.accessToken}`;
-          response = await fetch(url, { ...fetchOptions, headers });
+          response = await fetch(url, { ...fetchOptions, headers, credentials: 'include' });
         }
       }
 
@@ -167,19 +154,28 @@ export class ApiError extends Error {
 
 export const api = new ApiClient();
 
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  avatar?: string | null;
+}
+
 export const authApi = {
   login: (email: string, password: string) =>
-    api.post<{ user: any; tokens: { accessToken: string; refreshToken: string } }>('/auth/login', { email, password }),
+    api.post<{ user: User; accessToken: string }>('/auth/login', { email, password }),
   
   register: (email: string, password: string, name: string) =>
-    api.post<{ user: any; tokens: { accessToken: string; refreshToken: string } }>('/auth/register', { email, password, name }),
+    api.post<{ user: User; accessToken: string }>('/auth/register', { email, password, name }),
   
   logout: () => api.post('/auth/logout'),
   
-  getProfile: () => api.get<any>('/auth/profile'),
+  getProfile: () => api.get<User>('/auth/profile'),
+  
+  refreshToken: () => api.post<{ accessToken: string }>('/auth/refresh'),
   
   updateProfile: (data: { name?: string; avatar?: string }) =>
-    api.patch<any>('/auth/profile', data),
+    api.patch<User>('/auth/profile', data),
   
   changePassword: (currentPassword: string, newPassword: string) =>
     api.post('/auth/change-password', { currentPassword, newPassword }),

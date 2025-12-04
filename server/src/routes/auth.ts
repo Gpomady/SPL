@@ -8,14 +8,27 @@ import { z } from 'zod';
 
 const router = Router();
 
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax' as const,
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+  path: '/',
+};
+
 router.post('/register', authLimiter, async (req, res: Response<ApiResponse>) => {
   try {
     const data = registerSchema.parse(req.body);
     const result = await authService.register(data);
     
+    res.cookie('refreshToken', result.tokens.refreshToken, COOKIE_OPTIONS);
+    
     res.status(201).json({
       success: true,
-      data: result,
+      data: {
+        user: result.user,
+        accessToken: result.tokens.accessToken,
+      },
       message: 'Conta criada com sucesso',
     });
   } catch (error) {
@@ -28,9 +41,14 @@ router.post('/login', authLimiter, async (req, res: Response<ApiResponse>) => {
     const data = loginSchema.parse(req.body);
     const result = await authService.login(data);
     
+    res.cookie('refreshToken', result.tokens.refreshToken, COOKIE_OPTIONS);
+    
     res.json({
       success: true,
-      data: result,
+      data: {
+        user: result.user,
+        accessToken: result.tokens.accessToken,
+      },
       message: 'Login realizado com sucesso',
     });
   } catch (error) {
@@ -40,20 +58,24 @@ router.post('/login', authLimiter, async (req, res: Response<ApiResponse>) => {
 
 router.post('/refresh', async (req, res: Response<ApiResponse>) => {
   try {
-    const { refreshToken } = req.body;
+    const refreshToken = req.cookies?.refreshToken;
     
     if (!refreshToken) {
-      return res.status(400).json({
+      return res.status(401).json({
         success: false,
-        message: 'Token de atualização não fornecido',
+        message: 'Token de atualização não encontrado',
       });
     }
     
     const tokens = await authService.refreshToken(refreshToken);
     
+    res.cookie('refreshToken', tokens.refreshToken, COOKIE_OPTIONS);
+    
     res.json({
       success: true,
-      data: tokens,
+      data: {
+        accessToken: tokens.accessToken,
+      },
     });
   } catch (error) {
     throw error;
@@ -62,8 +84,10 @@ router.post('/refresh', async (req, res: Response<ApiResponse>) => {
 
 router.post('/logout', authenticate, async (req: AuthRequest, res: Response<ApiResponse>) => {
   try {
-    const { refreshToken } = req.body;
+    const refreshToken = req.cookies?.refreshToken;
     await authService.logout(req.user!.userId, refreshToken);
+    
+    res.clearCookie('refreshToken', { path: '/' });
     
     res.json({
       success: true,

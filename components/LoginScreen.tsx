@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, ArrowRight, Leaf, Shield, CheckCircle } from 'lucide-react';
 import { Logo } from './Logo';
+import { authApi, api, ApiError, User } from '@lib/api';
 
 interface LoginScreenProps {
-  onLogin: () => void;
+  onLogin: (user: User) => void;
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
@@ -15,8 +16,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotSent, setForgotSent] = useState(false);
   const [error, setError] = useState('');
+  const [isRegisterMode, setIsRegisterMode] = useState(false);
+  const [name, setName] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
@@ -24,12 +27,32 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
       setError('Preencha todos os campos');
       return;
     }
+
+    if (isRegisterMode && !name) {
+      setError('Informe seu nome');
+      return;
+    }
     
     setIsLoading(true);
-    setTimeout(() => {
+    
+    try {
+      const response = isRegisterMode
+        ? await authApi.register(email, password, name)
+        : await authApi.login(email, password);
+      
+      if (response.success && response.data) {
+        api.setAccessToken(response.data.accessToken);
+        onLogin(response.data.user);
+      }
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err.message);
+      } else {
+        setError('Erro ao conectar com o servidor');
+      }
+    } finally {
       setIsLoading(false);
-      onLogin();
-    }, 800);
+    }
   };
 
   const handleForgotPassword = (e: React.FormEvent) => {
@@ -125,8 +148,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
 
             {/* Welcome text */}
             <div className="mb-8">
-              <h2 className="text-2xl font-bold text-slate-800 mb-2">Bem-vindo de volta</h2>
-              <p className="text-slate-500 text-sm">Entre com suas credenciais para continuar</p>
+              <h2 className="text-2xl font-bold text-slate-800 mb-2">
+                {isRegisterMode ? 'Criar conta' : 'Bem-vindo de volta'}
+              </h2>
+              <p className="text-slate-500 text-sm">
+                {isRegisterMode 
+                  ? 'Preencha os dados para criar sua conta' 
+                  : 'Entre com suas credenciais para continuar'}
+              </p>
             </div>
 
             {/* Error message */}
@@ -138,6 +167,20 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-5">
+              {isRegisterMode && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Nome</label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Seu nome completo"
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                    autoComplete="name"
+                  />
+                </div>
+              )}
+              
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">E-mail</label>
                 <input
@@ -193,15 +236,32 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                 ) : (
                   <>
-                    Entrar
+                    {isRegisterMode ? 'Criar conta' : 'Entrar'}
                     <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                   </>
                 )}
               </button>
             </form>
 
+            {/* Toggle register/login */}
+            <div className="mt-6 text-center">
+              <p className="text-sm text-slate-500">
+                {isRegisterMode ? 'Já tem uma conta?' : 'Não tem conta?'}{' '}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsRegisterMode(!isRegisterMode);
+                    setError('');
+                  }}
+                  className="text-teal-600 hover:text-teal-700 font-medium transition-colors"
+                >
+                  {isRegisterMode ? 'Entrar' : 'Criar conta'}
+                </button>
+              </p>
+            </div>
+
             {/* Footer */}
-            <div className="mt-12 text-center">
+            <div className="mt-8 text-center">
               <p className="text-xs text-slate-400">
                 © {new Date().getFullYear()} SPL Amazônia · Todos os direitos reservados
               </p>

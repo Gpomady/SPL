@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import './src/styles/main.css';
 
 window.__GEMINI_API_KEY__ = __GEMINI_API_KEY__;
 

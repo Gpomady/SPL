@@ -10,12 +10,14 @@ import { NotificationsDashboard } from './NotificationsDashboard';
 import { DocumentsDashboard } from './DocumentsDashboard';
 import { Sidebar } from './Sidebar';
 import { UserMenu, SettingsModal, HelpModal } from './UserMenu';
+import { User } from '@lib/api';
 
 interface DashboardProps {
   onLogout: () => void;
+  user?: User | null;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ onLogout }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ onLogout, user }) => {
   const [currentView, setCurrentView] = useState('home');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
