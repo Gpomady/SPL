@@ -12,9 +12,12 @@ import {
   Archive, 
   Trash2, 
   Eye,
-  Check
+  Check,
+  X,
+  Settings
 } from 'lucide-react';
 import { Button } from './Button';
+import { Modal } from './Modal';
 
 // --- MOCK DATA ---
 const MOCK_NOTIFICATIONS = [
@@ -68,8 +71,46 @@ const MOCK_NOTIFICATIONS = [
 export const NotificationsDashboard: React.FC = () => {
   const [filter, setFilter] = useState<'all' | 'unread' | 'high'>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+  const [selectedNotif, setSelectedNotif] = useState<typeof MOCK_NOTIFICATIONS[0] | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [settings, setSettings] = useState({
+    emailNotifications: true,
+    pushNotifications: false,
+    digestFrequency: 'daily'
+  });
 
-  const filteredNotifications = MOCK_NOTIFICATIONS.filter(notif => {
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000);
+  };
+
+  const handleMarkAsRead = (id: number) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    showToast('Aviso marcado como lido');
+  };
+
+  const handleMarkAllRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    showToast('Todos os avisos marcados como lidos!');
+  };
+
+  const handleArchive = (id: number) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+    showToast('Aviso arquivado');
+  };
+
+  const handleViewDetails = (notif: typeof MOCK_NOTIFICATIONS[0]) => {
+    setSelectedNotif(notif);
+    setShowDetailsModal(true);
+    if (!notif.read) {
+      handleMarkAsRead(notif.id);
+    }
+  };
+
+  const filteredNotifications = notifications.filter(notif => {
     const matchesSearch = notif.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           notif.message.toLowerCase().includes(searchTerm.toLowerCase());
     
@@ -107,7 +148,10 @@ export const NotificationsDashboard: React.FC = () => {
           <p className="text-sm text-slate-500">Acompanhe comunicados importantes, prazos e alertas do sistema.</p>
         </div>
         <div className="flex gap-2">
-            <Button size="sm" variant="outline" className="text-slate-600">
+            <Button size="sm" variant="outline" className="text-slate-600" onClick={() => setShowSettingsModal(true)}>
+                <Settings size={16} className="mr-2"/> Configurações
+            </Button>
+            <Button size="sm" variant="outline" className="text-slate-600" onClick={handleMarkAllRead}>
                 <CheckCircle2 size={16} className="mr-2"/> Marcar todas como lidas
             </Button>
         </div>
@@ -188,10 +232,27 @@ export const NotificationsDashboard: React.FC = () => {
                     </div>
 
                     <div className="flex md:flex-col gap-2 justify-end md:justify-start md:border-l border-slate-100 md:pl-4">
-                         <button className="p-2 text-slate-400 hover:text-[#0f766e] hover:bg-slate-50 rounded transition-colors" title="Visualizar Detalhes">
+                         <button 
+                           onClick={() => handleViewDetails(notif)}
+                           className="p-2 text-slate-400 hover:text-[#0f766e] hover:bg-slate-50 rounded transition-colors" 
+                           title="Visualizar Detalhes"
+                         >
                             <Eye size={18} />
                          </button>
-                         <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded transition-colors" title="Arquivar">
+                         {!notif.read && (
+                           <button 
+                             onClick={() => handleMarkAsRead(notif.id)}
+                             className="p-2 text-slate-400 hover:text-emerald-500 hover:bg-slate-50 rounded transition-colors" 
+                             title="Marcar como lido"
+                           >
+                              <Check size={18} />
+                           </button>
+                         )}
+                         <button 
+                           onClick={() => handleArchive(notif.id)}
+                           className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded transition-colors" 
+                           title="Arquivar"
+                         >
                             <Archive size={18} />
                          </button>
                     </div>
@@ -208,9 +269,131 @@ export const NotificationsDashboard: React.FC = () => {
 
       <div className="flex justify-center pt-4">
         <span className="text-xs text-slate-400">
-            Mostrando {filteredNotifications.length} de {MOCK_NOTIFICATIONS.length} avisos
+            Mostrando {filteredNotifications.length} de {notifications.length} avisos
         </span>
       </div>
+
+      {toast && (
+        <div className={`fixed top-6 right-6 z-50 px-4 py-3 rounded-xl shadow-lg border flex items-center gap-3 animate-slide-in
+          ${toast.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800'}
+        `}>
+          {toast.type === 'success' ? <CheckCircle2 size={20}/> : <AlertTriangle size={20}/>}
+          <span className="text-sm font-medium">{toast.message}</span>
+          <button onClick={() => setToast(null)} className="ml-2 opacity-50 hover:opacity-100">
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
+      <Modal
+        isOpen={showDetailsModal}
+        onClose={() => setShowDetailsModal(false)}
+        title="Detalhes do Aviso"
+        size="lg"
+      >
+        {selectedNotif && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                selectedNotif.type === 'warning' ? 'bg-amber-50' :
+                selectedNotif.type === 'alert' ? 'bg-rose-50' : 'bg-blue-50'
+              }`}>
+                {getIcon(selectedNotif.type)}
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-400">Publicado em: {selectedNotif.date}</span>
+                  {selectedNotif.priority === 'high' && (
+                    <span className="text-[10px] font-bold bg-rose-50 text-rose-600 px-2 py-0.5 rounded border border-rose-100 uppercase">
+                      Alta Prioridade
+                    </span>
+                  )}
+                </div>
+                <h3 className="font-bold text-slate-800">{selectedNotif.title}</h3>
+              </div>
+            </div>
+            
+            <div className="bg-slate-50 rounded-lg p-4">
+              <p className="text-sm text-slate-600 leading-relaxed">{selectedNotif.message}</p>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex-1"
+                onClick={() => { handleArchive(selectedNotif.id); setShowDetailsModal(false); }}
+              >
+                <Archive size={14} className="mr-2"/> Arquivar
+              </Button>
+              <Button 
+                size="sm" 
+                className="flex-1"
+                onClick={() => setShowDetailsModal(false)}
+              >
+                Fechar
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        isOpen={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
+        title="Configurações de Notificações"
+        onConfirm={() => { setShowSettingsModal(false); showToast('Configurações salvas!'); }}
+        confirmText="Salvar Configurações"
+      >
+        <div className="space-y-4">
+          <div className="flex items-center justify-between py-3 border-b border-slate-100">
+            <div>
+              <h4 className="text-sm font-medium text-slate-800">Notificações por E-mail</h4>
+              <p className="text-xs text-slate-500">Receber avisos importantes por e-mail</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input 
+                type="checkbox" 
+                className="sr-only peer" 
+                checked={settings.emailNotifications}
+                onChange={(e) => setSettings({ ...settings, emailNotifications: e.target.checked })}
+              />
+              <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
+            </label>
+          </div>
+          
+          <div className="flex items-center justify-between py-3 border-b border-slate-100">
+            <div>
+              <h4 className="text-sm font-medium text-slate-800">Notificações Push</h4>
+              <p className="text-xs text-slate-500">Receber alertas em tempo real no navegador</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input 
+                type="checkbox" 
+                className="sr-only peer" 
+                checked={settings.pushNotifications}
+                onChange={(e) => setSettings({ ...settings, pushNotifications: e.target.checked })}
+              />
+              <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
+            </label>
+          </div>
+          
+          <div className="py-3">
+            <h4 className="text-sm font-medium text-slate-800 mb-2">Frequência do Resumo</h4>
+            <p className="text-xs text-slate-500 mb-3">Com que frequência você quer receber o resumo de avisos</p>
+            <select
+              value={settings.digestFrequency}
+              onChange={(e) => setSettings({ ...settings, digestFrequency: e.target.value })}
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+            >
+              <option value="realtime">Tempo Real</option>
+              <option value="daily">Diário</option>
+              <option value="weekly">Semanal</option>
+              <option value="never">Nunca</option>
+            </select>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

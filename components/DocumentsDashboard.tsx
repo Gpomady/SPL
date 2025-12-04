@@ -18,9 +18,14 @@ import {
   List,
   UploadCloud,
   Trash2,
-  FolderOpen
+  FolderOpen,
+  X,
+  Upload,
+  FilePlus,
+  FolderPlus
 } from 'lucide-react';
 import { Button } from './Button';
+import { Modal } from './Modal';
 
 interface DocumentsDashboardProps {
   viewMode?: string;
@@ -112,6 +117,70 @@ export const DocumentsDashboard: React.FC<DocumentsDashboardProps> = ({
   const [activeFolder, setActiveFolder] = useState<string | null>('f2');
   const [searchTerm, setSearchTerm] = useState('');
   const [viewFormat, setViewFormat] = useState<'list' | 'grid'>('list');
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showNewFolderModal, setShowNewFolderModal] = useState(false);
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [dragActive, setDragActive] = useState(false);
+  const [newFolder, setNewFolder] = useState({ name: '', type: 'provider' });
+  const [uploadFile, setUploadFile] = useState<{ name: string; validity: string; number: string; area: string; category: string }>({
+    name: '', validity: '', number: '', area: '', category: ''
+  });
+  const [filters, setFilters] = useState({ status: 'all', area: 'all', category: 'all' });
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000);
+  };
+
+  const handleExport = () => {
+    setIsExporting(true);
+    setTimeout(() => {
+      setIsExporting(false);
+      showToast('Documentos exportados com sucesso!');
+    }, 1500);
+  };
+
+  const handleUpload = () => {
+    if (!uploadFile.name || !uploadFile.validity) {
+      showToast('Preencha os campos obrigatórios', 'error');
+      return;
+    }
+    setShowUploadModal(false);
+    showToast('Documento enviado com sucesso!');
+    setUploadFile({ name: '', validity: '', number: '', area: '', category: '' });
+  };
+
+  const handleCreateFolder = () => {
+    if (!newFolder.name) {
+      showToast('Nome da pasta é obrigatório', 'error');
+      return;
+    }
+    setShowNewFolderModal(false);
+    showToast('Pasta criada com sucesso!');
+    setNewFolder({ name: '', type: 'provider' });
+  };
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive(true);
+    } else if (e.type === 'dragleave') {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      setUploadFile({ ...uploadFile, name: e.dataTransfer.files[0].name.replace(/\.[^/.]+$/, "") });
+      setShowUploadModal(true);
+    }
+  };
 
   // Logic to switch context based on viewMode
   const isCompany = viewMode === 'documents-empresa';
@@ -136,10 +205,18 @@ export const DocumentsDashboard: React.FC<DocumentsDashboardProps> = ({
                 {isCompany ? 'Documentos Internos' : isTrash ? 'Lixeira' : 'Fornecedores'}
              </h2>
              <div className="flex gap-1">
-                <button className="p-1.5 text-slate-400 hover:text-[#0f766e] hover:bg-slate-50 rounded" title="Nova Pasta">
-                    <FolderOpen size={18} />
+                <button 
+                  onClick={() => setShowNewFolderModal(true)}
+                  className="p-1.5 text-slate-400 hover:text-[#0f766e] hover:bg-slate-50 rounded" 
+                  title="Nova Pasta"
+                >
+                    <FolderPlus size={18} />
                 </button>
-                <button className="p-1.5 text-slate-400 hover:text-[#0f766e] hover:bg-slate-50 rounded" title="Ordenar">
+                <button 
+                  onClick={() => setShowFilterModal(true)}
+                  className="p-1.5 text-slate-400 hover:text-[#0f766e] hover:bg-slate-50 rounded" 
+                  title="Filtrar"
+                >
                     <Filter size={18} />
                 </button>
              </div>
@@ -235,13 +312,13 @@ export const DocumentsDashboard: React.FC<DocumentsDashboardProps> = ({
                           <LayoutGrid size={16} />
                       </button>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={() => setShowFilterModal(true)}>
                       <Filter size={14} className="mr-2"/> Filtrar
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={handleExport} isLoading={isExporting}>
                       <Download size={14} className="mr-2"/> Exportar
                   </Button>
-                  <Button size="sm">
+                  <Button size="sm" onClick={() => setShowUploadModal(true)}>
                       <Plus size={16} className="mr-2"/> Novo Documento
                   </Button>
              </div>
@@ -285,6 +362,198 @@ export const DocumentsDashboard: React.FC<DocumentsDashboardProps> = ({
         </div>
 
       </div>
+
+      {toast && (
+        <div className={`fixed top-6 right-6 z-50 px-4 py-3 rounded-xl shadow-lg border flex items-center gap-3 animate-slide-in
+          ${toast.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800'}
+        `}>
+          {toast.type === 'success' ? <CheckCircle2 size={20}/> : <AlertTriangle size={20}/>}
+          <span className="text-sm font-medium">{toast.message}</span>
+          <button onClick={() => setToast(null)} className="ml-2 opacity-50 hover:opacity-100">
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
+      <Modal
+        isOpen={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+        title="Novo Documento"
+        size="lg"
+        onConfirm={handleUpload}
+        confirmText="Enviar Documento"
+      >
+        <div className="space-y-4">
+          <div 
+            className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${dragActive ? 'border-teal-500 bg-teal-50' : 'border-slate-200 hover:border-teal-300'}`}
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
+            onDragOver={handleDrag}
+            onDrop={handleDrop}
+          >
+            <Upload size={40} className="mx-auto text-slate-400 mb-3"/>
+            <p className="text-sm text-slate-600 mb-2">Arraste o arquivo aqui ou clique para selecionar</p>
+            <p className="text-xs text-slate-400">PDF, PNG, JPG ou DOCX (máx. 10MB)</p>
+            <input type="file" className="hidden" accept=".pdf,.png,.jpg,.jpeg,.docx" />
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Nome do Documento *</label>
+              <input
+                type="text"
+                value={uploadFile.name}
+                onChange={(e) => setUploadFile({ ...uploadFile, name: e.target.value })}
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                placeholder="Nome do documento..."
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Número</label>
+              <input
+                type="text"
+                value={uploadFile.number}
+                onChange={(e) => setUploadFile({ ...uploadFile, number: e.target.value })}
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                placeholder="Ex: 123/2024..."
+              />
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Validade *</label>
+              <input
+                type="date"
+                value={uploadFile.validity}
+                onChange={(e) => setUploadFile({ ...uploadFile, validity: e.target.value })}
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Área</label>
+              <select
+                value={uploadFile.area}
+                onChange={(e) => setUploadFile({ ...uploadFile, area: e.target.value })}
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+              >
+                <option value="">Selecione...</option>
+                <option value="Meio Ambiente">Meio Ambiente</option>
+                <option value="Segurança">Segurança</option>
+                <option value="Suprimentos">Suprimentos</option>
+                <option value="Administrativo">Administrativo</option>
+              </select>
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Categoria</label>
+            <select
+              value={uploadFile.category}
+              onChange={(e) => setUploadFile({ ...uploadFile, category: e.target.value })}
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+            >
+              <option value="">Selecione...</option>
+              <option value="Licenças">Licenças</option>
+              <option value="Ambiental">Ambiental</option>
+              <option value="Legal">Legal</option>
+              <option value="Segurança">Segurança</option>
+            </select>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={showNewFolderModal}
+        onClose={() => setShowNewFolderModal(false)}
+        title="Nova Pasta"
+        onConfirm={handleCreateFolder}
+        confirmText="Criar Pasta"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Nome da Pasta *</label>
+            <input
+              type="text"
+              value={newFolder.name}
+              onChange={(e) => setNewFolder({ ...newFolder, name: e.target.value })}
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+              placeholder="Nome da nova pasta..."
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Tipo de Pasta</label>
+            <select
+              value={newFolder.type}
+              onChange={(e) => setNewFolder({ ...newFolder, type: e.target.value })}
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+            >
+              <option value="provider">Fornecedor</option>
+              <option value="company">Documento Interno</option>
+            </select>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={showFilterModal}
+        onClose={() => setShowFilterModal(false)}
+        title="Filtrar Documentos"
+        onConfirm={() => { setShowFilterModal(false); showToast('Filtros aplicados!'); }}
+        confirmText="Aplicar Filtros"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
+            <select
+              value={filters.status}
+              onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+            >
+              <option value="all">Todos</option>
+              <option value="valid">Válidos</option>
+              <option value="warning">A Vencer</option>
+              <option value="expired">Vencidos</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Área</label>
+            <select
+              value={filters.area}
+              onChange={(e) => setFilters({ ...filters, area: e.target.value })}
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+            >
+              <option value="all">Todas</option>
+              <option value="Meio Ambiente">Meio Ambiente</option>
+              <option value="Segurança">Segurança</option>
+              <option value="Suprimentos">Suprimentos</option>
+              <option value="Administrativo">Administrativo</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Categoria</label>
+            <select
+              value={filters.category}
+              onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+            >
+              <option value="all">Todas</option>
+              <option value="Licenças">Licenças</option>
+              <option value="Ambiental">Ambiental</option>
+              <option value="Legal">Legal</option>
+              <option value="Segurança">Segurança</option>
+            </select>
+          </div>
+          <div className="pt-2 border-t border-slate-100">
+            <button 
+              onClick={() => setFilters({ status: 'all', area: 'all', category: 'all' })}
+              className="text-sm text-teal-600 hover:text-teal-700 font-medium"
+            >
+              Limpar Filtros
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
