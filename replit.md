@@ -1,7 +1,7 @@
 # SPL - Sistema de Previsão Legal
 
 ## Overview
-This is a Brazilian legal prediction system (SPL - Sistema de Previsão Legal) focused on environmental compliance in the Amazon region. The application provides legal analysis, compliance tracking, and document management for legal professionals.
+This is a Brazilian legal prediction system (SPL - Sistema de Previsão Legal) focused on environmental compliance in the Amazon region. The application provides legal analysis, compliance tracking, and document management for B2B clients. All UI is in Brazilian Portuguese.
 
 ## Project Architecture
 
@@ -10,102 +10,114 @@ This is a Brazilian legal prediction system (SPL - Sistema de Previsão Legal) f
 - **Build Tool**: Vite 6.x
 - **Styling**: TailwindCSS (CDN)
 - **AI Integration**: Google Gemini API for legal case analysis
+- **Charts**: Recharts for data visualization
 - **Port**: 5000 (configured for Replit deployment)
 
 ### Key Features
+- CNPJ lookup with automatic data retrieval from Receita Federal
+- CNAE-based legal requirement identification
 - Legal Assistant with AI-powered case analysis
-- Compliance Dashboard
-- Document Management
-- Company Dashboard
-- Questionnaire System
-- Notifications
-- User Authentication (frontend-only, no backend)
+- Compliance Dashboard with KPIs and charts
+- Document Management with drag-and-drop upload
+- Company Dashboard with multi-step onboarding
+- Questionnaire System for operational profile
+- Notifications and legal updates tracking
+- Action Plans management
 
 ## Project Structure
 ```
 .
-├── components/          # React UI components
-│   ├── Dashboard.tsx
-│   ├── LoginScreen.tsx
-│   ├── LegalAssistant.tsx
-│   ├── ComplianceDashboard.tsx
-│   └── ... (other dashboards)
-├── services/           # API services
-│   └── geminiService.ts  # Gemini AI integration
-├── backend/            # Backend config files (not implemented)
-│   └── src/config/     # Environment, logging, cache configs
-├── App.tsx            # Main app component
-├── index.tsx          # App entry point
-├── index.html         # HTML template
-├── vite.config.ts     # Vite configuration
-└── package.json       # Dependencies
-
+├── src/                        # New organized source code
+│   ├── types/                  # TypeScript type definitions
+│   │   └── index.ts            # Company, CNAE, LegalRequirement, etc.
+│   ├── services/               # API service layer
+│   │   ├── cnpjService.ts      # CNPJ validation and lookup (BrasilAPI)
+│   │   ├── cnaeService.ts      # CNAE lookup and risk mapping (IBGE)
+│   │   └── legalService.ts     # Legal requirements generation
+│   ├── hooks/                  # Custom React hooks
+│   │   └── useToast.ts         # Toast notification hook
+│   ├── context/                # React Context providers
+│   │   └── AppContext.tsx      # Global state management
+│   ├── components/
+│   │   ├── ui/                 # Reusable UI components
+│   │   │   ├── StatusBadge.tsx # Status indicators
+│   │   │   ├── RiskIndicator.tsx # Risk level displays
+│   │   │   ├── Toast.tsx       # Toast notifications
+│   │   │   ├── Stepper.tsx     # Multi-step wizard
+│   │   │   └── FilterPanel.tsx # Filter UI
+│   │   └── shared/             # Shared business components
+│   │       ├── OnboardingFlow.tsx # Company onboarding wizard
+│   │       ├── ObligationDetailModal.tsx # Obligation details
+│   │       └── ExecutiveDashboard.tsx # Executive KPIs
+├── components/                 # Legacy components
+│   ├── Dashboard.tsx           # Main layout with navigation
+│   ├── LoginScreen.tsx         # Login page
+│   ├── LegalAssistant.tsx      # AI legal assistant
+│   ├── ComplianceDashboard.tsx # OL/RL compliance tracking
+│   ├── SPLDashboard.tsx        # Action plans and library
+│   ├── CompanyDashboard.tsx    # Company profile
+│   ├── DocumentsDashboard.tsx  # Document management
+│   ├── QuestionnaireDashboard.tsx # Questionnaires
+│   ├── NotificationsDashboard.tsx # Notifications
+│   ├── Charts.tsx              # Recharts components
+│   ├── Modal.tsx               # Modal dialogs
+│   └── Sidebar.tsx             # Navigation sidebar
+├── App.tsx                     # Main app component
+├── index.tsx                   # App entry point
+├── vite.config.ts              # Vite configuration with path aliases
+└── tsconfig.json               # TypeScript config with path aliases
 ```
 
 ## Recent Changes (Dec 4, 2024)
 
-### Charts and Data Visualization
-1. **Recharts Integration**: Added Recharts library for interactive data visualizations
-2. **Charts Component**: Created reusable `Charts.tsx` with Bar, Line, Pie, Area, and Donut chart types
-3. **ComplianceDashboard Charts**: Real charts showing compliance status, monthly progress, and area distribution
-4. **Dashboard Charts**: Added visual indicators for compliance metrics
+### New Service Layer Architecture
+1. **Type System**: Comprehensive TypeScript types for Company, CNAE, LegalRequirement, Obligation, Evidence, ActionPlan
+2. **CNPJ Service**: Real API integration with BrasilAPI for company data lookup
+3. **CNAE Service**: IBGE API integration for CNAE classification with risk mapping
+4. **Legal Service**: Automatic legal requirement generation based on CNAEs and location
 
-### Interactive Components
-1. **Modal Component**: Created reusable `Modal.tsx` with sizes (sm/md/lg), confirm actions, and animations
-2. **Toast Notifications**: Added contextual feedback for user actions across all dashboards
-3. **Button Component**: Enhanced with loading states and variants
+### New Components
+1. **StatusBadge**: Unified status display for compliance, risk, priority, action, document status
+2. **RiskIndicator**: Multiple variants (badge, dot, bar, icon) for risk display
+3. **Stepper**: Multi-step wizard for onboarding and forms
+4. **FilterPanel**: Advanced filtering with select, multi-select, search, date-range
+5. **Toast System**: Global toast notifications with useToast hook
+6. **OnboardingFlow**: 4-step company registration (CNPJ → Confirm → Profile → Generate)
+7. **ObligationDetailModal**: Detailed view with evidence upload and history
+8. **ExecutiveDashboard**: Executive KPIs with conformity gauge
 
-### SPLDashboard Enhancements
-1. **New Plan Modal**: Functional "Novo Plano" button with complete form (title, area, responsible, deadline, priority, origin)
-2. **Export Functionality**: Working "Exportar Relatório" button with loading state
-3. **Toast Notifications**: Success/error feedback for all actions
-4. **View Components**: ActionPlansView, LegalUpdatesView, LibraryView with onShowToast prop support
+### State Management
+- **AppContext**: Centralized state with useReducer
+- **useNavigation**: Navigation hook for view switching
+- **useCompany**: Company data management
+- **useOnboarding**: Onboarding flow state
+- **useNotifications**: Notification management
 
-### DocumentsDashboard Enhancements
-1. **Upload Modal**: Complete upload form with drag-and-drop support, file metadata fields
-2. **New Folder Modal**: Create new folders with name and type selection
-3. **Filter Modal**: Filter by status, area, and category with reset option
-4. **Export Button**: Functional export with loading state
+### Path Aliases
+Configured in vite.config.ts and tsconfig.json:
+- `@src/*` → `./src/*`
+- `@types/*` → `./src/types/*`
+- `@services/*` → `./src/services/*`
+- `@hooks/*` → `./src/hooks/*`
+- `@context/*` → `./src/context/*`
+- `@ui/*` → `./src/components/ui/*`
+- `@shared/*` → `./src/components/shared/*`
 
-### NotificationsDashboard Enhancements
-1. **Mark as Read**: Individual and bulk "mark all as read" functionality
-2. **Archive Notifications**: Remove notifications from the list
-3. **View Details Modal**: Full notification details in a modal
-4. **Settings Modal**: Configure email/push notifications and digest frequency
-
-### UI/UX Improvements
-1. **SPLDashboard Redesign**: Complete redesign with modern cards, enhanced statistics display, improved visual hierarchy, and interactive cards with status indicators
-2. **Sidebar Enhancement**: Redesigned with expandable menus, better icons, collapsed state support, and smoother navigation transitions
-3. **LegalAssistant Upgrade**: Modern UI with better loading states, example prompts, and improved user experience
-4. **Global Animations**: Added comprehensive CSS animations (fade-in, slide-in, fade-in-up, fade-in-down) and custom scrollbar styling
+### API Integrations
+1. **BrasilAPI (CNPJ)**: `https://brasilapi.com.br/api/cnpj/v1/{cnpj}`
+2. **IBGE (CNAE)**: `https://servicodados.ibge.gov.br/api/v2/cnae`
+3. **Google Gemini**: AI-powered legal analysis
 
 ### Technical Fixes
-1. **Tailwind CSS Class Mapping**: Fixed critical Tailwind CSS class interpolation issues by replacing template literals with proper class mapping objects (getStatusClasses, getPriorityClasses) - Tailwind CDN doesn't support dynamic class generation
-2. **Status/Priority Configs**: Added explicit class definitions for statuses (concluido, em_andamento, atrasado) and priorities (critica, alta, media, baixa)
-3. **TypeScript Props**: Proper typing for all component props including onShowToast handlers
-
-### Replit Environment Setup
-1. **Port Configuration**: Changed from 3000 to 5000 for Replit webview compatibility
-2. **HMR Configuration**: Added conditional HMR config for both Replit and local development
-3. **Entry Point**: Added script tag to index.html to load the React app
-4. **Environment Variables**: Configured Vite to use GEMINI_API_KEY from environment
-5. **Type Definitions**: Added vite-env.d.ts for TypeScript support
-6. **Gemini Service**: Refactored to use lazy initialization and better error handling
-7. **Deployment**: Configured static deployment with build command
-
-### Configuration Notes
-- The app uses Vite's environment variable system with the `VITE_` prefix
-- HMR is configured to work with Replit's proxy environment
-- The Gemini API key is injected at build time and exposed in the client bundle
-- The backend folder contains configuration files but no actual server implementation
-- **Important**: Tailwind CDN requires explicit class names - template literals like `bg-${color}-500` don't work and must use class mapping objects
+1. **Chart Dimensions**: Added min-height container to prevent negative dimension errors
+2. **Tailwind CSS**: Using class mapping objects for dynamic styling (CDN limitation)
+3. **Path Aliases**: Consistent imports across the project
 
 ## Environment Variables
 
 ### Required Secrets
 - `GEMINI_API_KEY` - Google Gemini API key for AI-powered legal analysis
   - Get your key from: https://ai.google.dev/
-  - Set in Replit Secrets tab or .env.local file
 
 ### Development
 The app loads environment variables from:
@@ -130,30 +142,31 @@ This creates a production build in the `dist/` directory.
 The project is configured for static deployment on Replit:
 - Build command: `npm run build`
 - Public directory: `dist`
-- No server required (static hosting)
 
 ## User Preferences
 - Language: Portuguese (Brazilian)
-- Focus: Environmental law and Amazon region compliance
+- Focus: Environmental law and Amazon region compliance (IPAAM, IBAMA)
 - Professional tone for legal analysis
+- Modern, clean UI with teal color scheme
 
-## Important Notes
-1. The backend folder exists but contains only configuration files, no actual server
-2. All functionality runs in the frontend
-3. The Gemini API is called directly from the browser
-4. API keys are exposed in the client bundle (typical for client-side apps)
-5. For production, consider moving sensitive API calls to a backend proxy
-6. Tailwind CDN is used (warning in console is expected for dev mode)
+## Amazon Region Focus
+- IPAAM (Instituto de Proteção Ambiental do Amazonas) requirements
+- State-specific environmental licensing (Law 3.785/2012)
+- CBMAM fire safety requirements
+- Fluvial navigation regulations (ANTAQ, NORMAM)
 
 ## Dependencies
 - React 19.2.0
 - @google/genai 1.30.0
 - lucide-react 0.555.0
 - react-markdown 10.1.0
+- recharts 2.x
 - Vite 6.2.0
 - TypeScript 5.8.2
 
 ## Next Steps
-- Add the GEMINI_API_KEY secret to use the AI features
-- The app will show a helpful error message if the key is missing
-- Test the Legal Assistant feature after adding the API key
+1. Add GEMINI_API_KEY secret for AI features
+2. Integrate onboarding flow into main app
+3. Connect executive dashboard to real data
+4. Implement evidence file upload storage
+5. Add database for persistent storage

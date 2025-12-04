@@ -45,7 +45,9 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({ title, subtitle,
       <h4 className="text-sm font-bold text-slate-700">{title}</h4>
       {subtitle && <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
     </div>
-    {children}
+    <div className="min-h-0">
+      {children}
+    </div>
   </div>
 );
 
@@ -66,8 +68,8 @@ export const ComplianceGauge: React.FC<ComplianceGaugeProps> = ({
 
   return (
     <ChartContainer title={title} subtitle={subtitle}>
-      <div className="relative h-48">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="relative h-48 min-h-[192px]">
+        <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={150}>
           <RadialBarChart 
             cx="50%" 
             cy="100%" 
@@ -104,8 +106,8 @@ export const MonthlyTrendChart: React.FC<MonthlyTrendChartProps> = ({
   title = 'Evolução Mensal'
 }) => (
   <ChartContainer title={title} subtitle="Últimos 12 meses">
-    <div className="h-64">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="h-64 min-h-[256px]">
+      <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={200}>
         <AreaChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
           <defs>
             <linearGradient id="colorConf" x1="0" y1="0" x2="0" y2="1">
@@ -156,8 +158,8 @@ export const StatusDistributionChart: React.FC<StatusDistributionChartProps> = (
   title = 'Distribuição por Status'
 }) => (
   <ChartContainer title={title} subtitle="Visão consolidada">
-    <div className="h-64 flex items-center">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="h-64 min-h-[256px] flex items-center">
+      <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={200}>
         <PieChart>
           <Pie
             data={data}
@@ -209,8 +211,8 @@ export const BarComparisonChart: React.FC<BarComparisonChartProps> = ({
   title = 'Comparativo por Área'
 }) => (
   <ChartContainer title={title} subtitle="Período atual vs anterior">
-    <div className="h-64">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="h-64 min-h-[256px]">
+      <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={200}>
         <BarChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
           <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
@@ -250,8 +252,8 @@ export const RiskHeatmap: React.FC<RiskHeatmapProps> = ({
   title = 'Matriz de Riscos'
 }) => (
   <ChartContainer title={title} subtitle="Distribuição por nível de risco">
-    <div className="h-64">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="h-64 min-h-[256px]">
+      <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={200}>
         <BarChart data={data} layout="vertical" margin={{ top: 10, right: 10, left: 60, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" horizontal={false} />
           <XAxis type="number" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
@@ -289,8 +291,8 @@ export const ProgressLineChart: React.FC<ProgressLineChartProps> = ({
   title = 'Progresso vs Meta'
 }) => (
   <ChartContainer title={title} subtitle="Acompanhamento de metas">
-    <div className="h-64">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="h-64 min-h-[256px]">
+      <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={200}>
         <LineChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
           <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
@@ -334,8 +336,8 @@ export const MiniSparkline: React.FC<MiniSparklineProps> = ({
   const chartData = data.map((value, index) => ({ value, index }));
   
   return (
-    <div style={{ height }}>
-      <ResponsiveContainer width="100%" height="100%">
+    <div style={{ height, minHeight: height }}>
+      <ResponsiveContainer width="100%" height="100%" minWidth={40} minHeight={height}>
         <AreaChart data={chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id={`sparkGradient-${color}`} x1="0" y1="0" x2="0" y2="1">
